@@ -45,6 +45,7 @@ class DataProcessorRPCHandlerInitializer(val dp: DataProcessor)
     with ResumeHandler
     with StartHandler
     with EndHandler
+    with EndIterationHandler
     with StartChannelHandler
     with EndChannelHandler
     with AssignPortHandler

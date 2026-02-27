@@ -243,7 +243,7 @@ class OutputManager(
       case None => this.ECMWriters
     }).foreach({
       case (portId, writer) =>
-        writer.putOne(new Tuple(ResultSchema.ecmSchema, Array(worker.name)))
+        writer.putOne(new Tuple(ResultSchema.ecmSchema, Array("erge")))
     })
   }
 
