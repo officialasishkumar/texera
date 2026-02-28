@@ -19,32 +19,44 @@
 
 package org.apache.texera.amber.operator.loop
 
-import org.apache.texera.amber.core.executor.OpExecWithClassName
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
+import org.apache.texera.amber.core.executor.OpExecWithCode
 import org.apache.texera.amber.core.virtualidentity.{ExecutionIdentity, WorkflowIdentity}
 import org.apache.texera.amber.core.workflow.{InputPort, OutputPort, PhysicalOp}
 import org.apache.texera.amber.operator.LogicalOp
 import org.apache.texera.amber.operator.metadata.{OperatorGroupConstants, OperatorInfo}
-import org.apache.texera.amber.util.JSONUtils.objectMapper
 
 class LoopEndOpDesc extends LogicalOp {
+  @JsonProperty(required = true, defaultValue = "i += 1")
+  @JsonSchemaTitle("Update")
+  var update: String = _
+
+  @JsonProperty(required = true, defaultValue = "i < len(table)")
+  @JsonSchemaTitle("Condition")
+  var condition: String = _
+
   override def getPhysicalOp(
       workflowId: WorkflowIdentity,
       executionId: ExecutionIdentity
   ): PhysicalOp = {
-    PhysicalOp
-      .oneToOnePhysicalOp(
+    val pythonCode =
+      try {
+        generatePythonCode()
+      } catch {
+        case ex: Throwable =>
+          s"#EXCEPTION DURING CODE GENERATION: ${ex.getMessage}"
+      }
+      PhysicalOp.oneToOnePhysicalOp(
         workflowId,
         executionId,
         operatorIdentifier,
-        OpExecWithClassName(
-          "org.apache.texera.amber.operator.loop.LoopEndOpExec",
-          objectMapper.writeValueAsString(this)
-        )
+        OpExecWithCode(pythonCode, "python")
       )
       .withInputPorts(operatorInfo.inputPorts)
       .withOutputPorts(operatorInfo.outputPorts)
-      .withParallelizable(false)
       .withSuggestedWorkerNum(1)
+      .withParallelizable(false)
   }
 
   override def operatorInfo: OperatorInfo =
@@ -55,4 +67,19 @@ class LoopEndOpDesc extends LogicalOp {
       inputPorts = List(InputPort()),
       outputPorts = List(OutputPort())
     )
+
+  def generatePythonCode(): String = {
+    s"""
+       |from pytexera import *
+       |class ProcessTableOperator(UDFTableOperator):
+       |    @overrides
+       |    def loop_condition_check(self) -> bool:
+       |        $update
+       |        return $condition
+       |
+       |    @overrides
+       |    def process_table(self, table: Table, port: int) -> Iterator[Optional[TableLike]]:
+       |        yield table
+       |""".stripMargin
+  }
 }

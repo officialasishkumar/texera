@@ -21,31 +21,41 @@ package org.apache.texera.amber.operator.loop
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
-import org.apache.texera.amber.core.executor.OpExecWithClassName
+import org.apache.texera.amber.core.executor.OpExecWithCode
 import org.apache.texera.amber.core.virtualidentity.{ExecutionIdentity, WorkflowIdentity}
 import org.apache.texera.amber.core.workflow.{InputPort, OutputPort, PhysicalOp}
 import org.apache.texera.amber.operator.LogicalOp
 import org.apache.texera.amber.operator.metadata.{OperatorGroupConstants, OperatorInfo}
-import org.apache.texera.amber.util.JSONUtils.objectMapper
 
 class LoopStartOpDesc extends LogicalOp {
-  @JsonProperty(required = true)
-  @JsonSchemaTitle("Iteration Number")
-  var iteration: Int = _
+  @JsonProperty(required = true, defaultValue = "i")
+  @JsonSchemaTitle("Variable")
+  var variable: String = _
+
+  @JsonProperty(required = true, defaultValue = "i = 0")
+  @JsonSchemaTitle("Initialization")
+  var initialization: String = _
+
+  @JsonProperty(required = true, defaultValue = "table.iloc[0]")
+  @JsonSchemaTitle("Output")
+  var output: String = _
 
   override def getPhysicalOp(
       workflowId: WorkflowIdentity,
       executionId: ExecutionIdentity
   ): PhysicalOp = {
-    PhysicalOp
-      .oneToOnePhysicalOp(
+    val pythonCode =
+      try {
+        generatePythonCode()
+      } catch {
+        case ex: Throwable =>
+          s"#EXCEPTION DURING CODE GENERATION: ${ex.getMessage}"
+      }
+      PhysicalOp.oneToOnePhysicalOp(
         workflowId,
         executionId,
         operatorIdentifier,
-        OpExecWithClassName(
-          "org.apache.texera.amber.operator.loop.LoopStartOpExec",
-          objectMapper.writeValueAsString(this)
-        )
+        OpExecWithCode(pythonCode, "python")
       )
       .withInputPorts(operatorInfo.inputPorts)
       .withOutputPorts(operatorInfo.outputPorts)
@@ -62,4 +72,18 @@ class LoopStartOpDesc extends LogicalOp {
       outputPorts = List(OutputPort())
     )
 
+  def generatePythonCode(): String = {
+    s"""
+       |from pytexera import *
+       |class ProcessLoopStartOperator(LoopStartOperator):
+       |    @overrides
+       |    def loop_initialization(self):
+       |        $initialization
+       |        return "$variable",$variable
+       |    @overrides
+       |    def process_table(self, table: Table, port: int) -> Iterator[Optional[TableLike]]:
+       |        $initialization
+       |        yield $output
+       |""".stripMargin
+  }
 }
