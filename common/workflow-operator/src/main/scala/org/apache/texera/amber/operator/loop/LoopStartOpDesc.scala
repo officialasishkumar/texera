@@ -80,6 +80,7 @@ class LoopStartOpDesc extends LogicalOp {
        |    def loop_initialization(self):
        |        $initialization
        |        return "$variable",$variable
+       |
        |    @overrides
        |    def process_table(self, table: Table, port: int) -> Iterator[Optional[TableLike]]:
        |        $initialization

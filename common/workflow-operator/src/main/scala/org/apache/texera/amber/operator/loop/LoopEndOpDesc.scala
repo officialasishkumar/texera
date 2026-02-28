@@ -71,15 +71,11 @@ class LoopEndOpDesc extends LogicalOp {
   def generatePythonCode(): String = {
     s"""
        |from pytexera import *
-       |class ProcessTableOperator(UDFTableOperator):
+       |class ProcessLoopEndOperator(LoopEndOperator):
        |    @overrides
        |    def loop_condition_check(self) -> bool:
        |        $update
        |        return $condition
-       |
-       |    @overrides
-       |    def process_table(self, table: Table, port: int) -> Iterator[Optional[TableLike]]:
-       |        yield table
        |""".stripMargin
   }
 }
