@@ -26,10 +26,17 @@ import org.apache.texera.amber.core.storage.result.ResultSchema
 import org.apache.texera.amber.core.tuple._
 import org.apache.texera.amber.core.virtualidentity.{ActorVirtualIdentity, ChannelIdentity}
 import org.apache.texera.amber.core.workflow.{PhysicalLink, PortIdentity}
-import org.apache.texera.amber.engine.architecture.messaginglayer.OutputManager.{DPOutputIterator, getBatchSize, toPartitioner}
+import org.apache.texera.amber.engine.architecture.messaginglayer.OutputManager.{
+  DPOutputIterator,
+  getBatchSize,
+  toPartitioner
+}
 import org.apache.texera.amber.engine.architecture.sendsemantics.partitioners._
 import org.apache.texera.amber.engine.architecture.sendsemantics.partitionings._
-import org.apache.texera.amber.engine.architecture.worker.managers.{OutputPortResultWriterThread, PortStorageWriterTerminateSignal}
+import org.apache.texera.amber.engine.architecture.worker.managers.{
+  OutputPortResultWriterThread,
+  PortStorageWriterTerminateSignal
+}
 import org.apache.texera.amber.engine.common.AmberLogging
 import org.apache.texera.amber.util.VirtualIdentityUtils
 
@@ -118,8 +125,7 @@ class OutputManager(
       : mutable.HashMap[PortIdentity, OutputPortResultWriterThread] =
     mutable.HashMap()
 
-  private val ECMWriters
-  : mutable.HashMap[PortIdentity, BufferedItemWriter[Tuple]] =
+  private val ECMWriters: mutable.HashMap[PortIdentity, BufferedItemWriter[Tuple]] =
     mutable.HashMap()
 
   /**
@@ -230,21 +236,8 @@ class OutputManager(
     })
   }
 
-  def saveECMToStorageIfNeeded(
-                                  tuple: Tuple,
-                                  outputPortId: Option[PortIdentity] = None
-                                ): Unit = {
-    (outputPortId match {
-      case Some(portId) =>
-        this.ECMWriters.get(portId) match {
-          case Some(_) => this.ECMWriters.filter(_._1 == portId)
-          case None    => Map.empty
-        }
-      case None => this.ECMWriters
-    }).foreach({
-      case (portId, writer) =>
-        writer.putOne(new Tuple(ResultSchema.ecmSchema, Array("erge")))
-    })
+  def saveECMToStorageIfNeeded(tuple: Tuple, outputPortId: PortIdentity): Unit = {
+    this.ECMWriters(outputPortId).putOne(new Tuple(ResultSchema.ecmSchema, Array("erge")))
   }
 
   /**
