@@ -35,6 +35,13 @@ class State:
             self.__dict__.update(table.to_pandas().iloc[0].to_dict())
             self.schema = Schema(table.schema)
 
+    @classmethod
+    def from_tuple(cls, tuple, schema):
+        obj = cls()
+        obj.__dict__.update(tuple.as_dict())
+        obj.schema = schema
+        return obj
+
     def add(
         self, key: str, value: any, value_type: Optional[AttributeType] = None
     ) -> None:
