@@ -47,7 +47,8 @@ class LoopEndOpDesc extends LogicalOp {
         case ex: Throwable =>
           s"#EXCEPTION DURING CODE GENERATION: ${ex.getMessage}"
       }
-      PhysicalOp.oneToOnePhysicalOp(
+    PhysicalOp
+      .oneToOnePhysicalOp(
         workflowId,
         executionId,
         operatorIdentifier,

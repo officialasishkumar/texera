@@ -26,7 +26,7 @@ import org.apache.texera.amber.util.JSONUtils.objectMapper
 case class Schedule(private val levelSets: Map[Int, Set[Region]]) extends Iterator[Set[Region]] {
   private var currentLevel = levelSets.keys.minOption.getOrElse(0)
   private var loopStartLevel = currentLevel
-  private var iteration = 1
+  private var iteration = 10
   private var i = 1
 
   def getRegions: List[Region] = levelSets.values.flatten.toList
@@ -44,14 +44,7 @@ case class Schedule(private val levelSets: Map[Int, Set[Region]]) extends Iterat
     if (
       regions.exists(_.getOperators.exists(_.id.logicalOpId.id.startsWith("LoopStart-operator-")))
     ) {
-      iteration = objectMapper
-        .readValue(
-          regions.head.getOperators.head.opExecInitInfo
-            .asInstanceOf[OpExecWithClassName]
-            .descString,
-          classOf[LoopStartOpDesc]
-        )
-        .iteration
+      //iteration = objectMapper.readValue(regions.head.getOperators.head.opExecInitInfo.asInstanceOf[OpExecWithClassName].descString, classOf[LoopStartOpDesc]).iteration
       loopStartLevel = currentLevel - 1
     }
     if (
