@@ -61,7 +61,7 @@ class DocumentFactory:
         if parsed_uri.scheme == VFSURIFactory.VFS_FILE_URI_SCHEME:
             _, _, _, resource_type = VFSURIFactory.decode_uri(uri)
 
-            if resource_type in {VFSResourceType.RESULT}:
+            if resource_type in {VFSResourceType.RESULT, VFSResourceType.STATE}:
                 storage_key = DocumentFactory.sanitize_uri_path(parsed_uri)
 
                 # Convert Amber Schema to Iceberg Schema with LARGE_BINARY
@@ -96,7 +96,7 @@ class DocumentFactory:
         if parsed_uri.scheme == "vfs":
             _, _, _, resource_type = VFSURIFactory.decode_uri(uri)
 
-            if resource_type in {VFSResourceType.RESULT}:
+            if resource_type in {VFSResourceType.RESULT, VFSResourceType.STATE}:
                 storage_key = DocumentFactory.sanitize_uri_path(parsed_uri)
 
                 table = load_table_metadata(
