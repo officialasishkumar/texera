@@ -110,7 +110,7 @@ private[storage] class IcebergTableWriter[T](
       var filepath: Path = null
       do {
         filepath = Paths.get(table.location()).resolve(s"${writerIdentifier}_$filenameIdx")
-        filenameIdx+= 1
+        filenameIdx += 1
       } while (Files.exists(filepath))
 
       val outputFile: OutputFile = table.io().newOutputFile(filepath.toString)
