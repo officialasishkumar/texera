@@ -76,11 +76,14 @@ class LoopStartOpDesc extends LogicalOp {
   def generatePythonCode(): String = {
     s"""
        |from pytexera import *
-       |class ProcessLoopStartOperator(LoopStartOperator):
+       |class ProcessTableOperator(UDFTableOperator):
        |    @overrides
-       |    def loop_initialization(self):
+       |    def produce_state_on_finish(self, port: int) -> State:
+       |        state = State(pass_to_all_downstream = True)
        |        $initialization
-       |        return "$variable",$variable
+       |        state["variable"] = "$variable"
+       |        state["iteration"] = $variable
+       |        return state
        |
        |    @overrides
        |    def process_table(self, table: Table, port: int) -> Iterator[Optional[TableLike]]:
