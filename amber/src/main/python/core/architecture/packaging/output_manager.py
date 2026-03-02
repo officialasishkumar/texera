@@ -87,6 +87,8 @@ class OutputManager:
             PortIdentity, typing.Tuple[Queue, PortStorageWriter, Thread]
         ] = dict()
 
+        self._storage_uris: typing.Dict[PortIdentity, str] = dict()
+
     def is_missing_output_ports(self):
         """
         This method is only used for ensuring correct region execution.
@@ -126,6 +128,7 @@ class OutputManager:
         Create a separate thread for saving output tuples of a port
         to storage in batch.
         """
+        self._storage_uris[port_id] = storage_uri
         document, _ = DocumentFactory.open_document(storage_uri)
         buffered_item_writer = document.writer(str(get_worker_index(self.worker_id)))
         writer_queue = Queue()
@@ -170,6 +173,21 @@ class OutputManager:
             self._port_storage_writers[port_id][0].put(
                 PortStorageWriterElement(data_tuple=tuple_)
             )
+
+    def save_state_to_storage_if_needed(self, state: State, port_id=None) -> None:
+        if port_id is None:
+            uris = self._storage_uris.values()
+        elif port_id in self._storage_uris:
+            uris = [self._storage_uris[port_id]]
+        else:
+            return
+
+        for uri in uris:
+            writer = DocumentFactory.create_document(
+                uri.replace("/result", "/state"), state.schema
+            ).writer(str(get_worker_index(self.worker_id)))
+            writer.put_one(Tuple(vars(state)))
+            writer.close()
 
     def close_port_storage_writers(self) -> None:
         """

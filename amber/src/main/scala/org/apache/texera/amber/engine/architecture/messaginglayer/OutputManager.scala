@@ -125,8 +125,7 @@ class OutputManager(
       : mutable.HashMap[PortIdentity, OutputPortResultWriterThread] =
     mutable.HashMap()
 
-  private val ECMWriters: mutable.HashMap[PortIdentity, BufferedItemWriter[Tuple]] =
-    mutable.HashMap()
+  private val storageUris: mutable.HashMap[Int, URI] = mutable.HashMap()
 
   /**
     * Add down stream operator and its corresponding Partitioner.
@@ -236,8 +235,13 @@ class OutputManager(
     })
   }
 
-  def saveECMToStorageIfNeeded(tuple: Tuple, outputPortId: PortIdentity): Unit = {
-    this.ECMWriters(outputPortId).putOne(new Tuple(ResultSchema.ecmSchema, Array("erge")))
+  def saveStateToStorageIfNeeded(state: State, outputPortId: Int): Unit = {
+    val writer = DocumentFactory
+      .createDocument(this.storageUris(outputPortId).resolve("state"), state.schema)
+      .writer(VirtualIdentityUtils.getWorkerIndex(actorId).toString)
+      .asInstanceOf[BufferedItemWriter[Tuple]]
+    writer.putOne(state.toTuple)
+    writer.close()
   }
 
   /**
@@ -288,10 +292,7 @@ class OutputManager(
   }
 
   private def setupOutputStorageWriterThread(portId: PortIdentity, storageUri: URI): Unit = {
-    this.ECMWriters(portId) = DocumentFactory
-      .createDocument(storageUri.resolve("ecm"), ResultSchema.ecmSchema)
-      .writer(VirtualIdentityUtils.getWorkerIndex(actorId).toString)
-      .asInstanceOf[BufferedItemWriter[Tuple]]
+    this.storageUris(portId.id) = storageUri
     val bufferedItemWriter = DocumentFactory
       .openDocument(storageUri)
       ._1

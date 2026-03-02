@@ -160,7 +160,7 @@ class InputPortMaterializationReaderRunnable(Runnable, Stoppable):
                     self.emit_payload(data_frame)
             try:
                 state_document, state_schema = DocumentFactory.open_document(
-                    f"{self.uri}/state"
+                    self.uri.replace("/result", "/state")
                 )
                 state_iterator = state_document.get()
                 for state in state_iterator:

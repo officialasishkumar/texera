@@ -41,14 +41,15 @@ final case class State(tuple: Option[Tuple] = None, passToAllDownstream: Boolean
 
   def apply(key: String): Any = get(key)
 
+  def schema: Schema =
+    Schema(data.map {
+      case (name, (attrType, _)) =>
+        new Attribute(name, attrType)
+    }.toList)
+
   def toTuple: Tuple =
     Tuple
-      .builder(
-        Schema(data.map {
-          case (name, (attrType, _)) =>
-            new Attribute(name, attrType)
-        }.toList)
-      )
+      .builder(schema)
       .addSequentially(data.values.map(_._2).toArray)
       .build()
 
