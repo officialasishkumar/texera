@@ -74,9 +74,11 @@ class LoopEndOpDesc extends LogicalOp {
        |from pytexera import *
        |class ProcessLoopEndOperator(LoopEndOperator):
        |    @overrides
-       |    def loop_condition_check(self) -> bool:
-       |        $update
-       |        return $condition
+       |    def process_state(self, state: State, port: int) -> Optional[State]:
+       |      i = state['i']
+       |      $update
+       |      print(i)
+       |      return state
        |""".stripMargin
   }
 }

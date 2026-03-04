@@ -293,3 +293,27 @@ class TableOperator(TupleOperatorV2):
             time, or None.
         """
         yield
+
+
+class LoopStartOperator(TableOperator):
+    def open(self) -> None:
+        pass
+
+    @abstractmethod
+    def process_table(self, table: Table, port: int) -> Iterator[Optional[TableLike]]:
+        yield
+
+    def close(self) -> None:
+        pass
+
+
+class LoopEndOperator(TableOperator):
+    def open(self) -> None:
+        pass
+
+    @overrides.final
+    def process_table(self, table: Table, port: int) -> Iterator[Optional[TableLike]]:
+        yield table
+
+    def close(self) -> None:
+        pass

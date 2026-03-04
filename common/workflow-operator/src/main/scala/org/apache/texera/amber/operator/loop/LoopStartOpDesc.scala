@@ -28,10 +28,6 @@ import org.apache.texera.amber.operator.LogicalOp
 import org.apache.texera.amber.operator.metadata.{OperatorGroupConstants, OperatorInfo}
 
 class LoopStartOpDesc extends LogicalOp {
-  @JsonProperty(required = true, defaultValue = "i")
-  @JsonSchemaTitle("Variable")
-  var variable: String = _
-
   @JsonProperty(required = true, defaultValue = "i = 0")
   @JsonSchemaTitle("Initialization")
   var initialization: String = _
@@ -81,8 +77,7 @@ class LoopStartOpDesc extends LogicalOp {
        |    def produce_state_on_finish(self, port: int) -> State:
        |        state = State(pass_to_all_downstream = True)
        |        $initialization
-       |        state["variable"] = "$variable"
-       |        state["iteration"] = $variable
+       |        state["i"] = i
        |        return state
        |
        |    @overrides
