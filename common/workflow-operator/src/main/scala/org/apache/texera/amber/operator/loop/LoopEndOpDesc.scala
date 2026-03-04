@@ -79,6 +79,10 @@ class LoopEndOpDesc extends LogicalOp {
        |      $update
        |      print(i)
        |      return state
+       |
+       |    @overrides
+       |    def process_table(self, table: Table, port: int) -> Iterator[Optional[TableLike]]:
+       |        yield table
        |""".stripMargin
   }
 }
