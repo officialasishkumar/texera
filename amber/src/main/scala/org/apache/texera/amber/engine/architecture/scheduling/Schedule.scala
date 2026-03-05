@@ -26,7 +26,7 @@ import org.apache.texera.amber.util.JSONUtils.objectMapper
 case class Schedule(private val levelSets: Map[Int, Set[Region]]) extends Iterator[Set[Region]] {
   private var currentLevel = levelSets.keys.minOption.getOrElse(0)
   private var loopStartLevel = currentLevel
-  private var iteration = 10
+  private var iteration = 3
   private var i = 1
 
   def getRegions: List[Region] = levelSets.values.flatten.toList
