@@ -94,12 +94,13 @@ class MainLoop(StoppableQueueBlockingRunnable):
         """
         # flush the buffered console prints
         self._check_and_report_console_messages(force_flush=True)
+        controller_interface = self._async_rpc_client.controller_stub()
+        #controller_interface.iteration_completed(EmptyRequest())
         self.context.executor_manager.executor.close()
         # stop the data processing thread
         self.data_processor.stop()
         self.context.state_manager.transit_to(WorkerState.COMPLETED)
         self.context.statistics_manager.update_total_execution_time(time.time_ns())
-        controller_interface = self._async_rpc_client.controller_stub()
         controller_interface.worker_execution_completed(EmptyRequest())
         self.context.close()
 

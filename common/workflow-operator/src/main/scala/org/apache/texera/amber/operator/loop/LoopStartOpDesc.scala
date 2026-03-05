@@ -32,6 +32,14 @@ class LoopStartOpDesc extends LogicalOp {
   @JsonSchemaTitle("Initialization")
   var initialization: String = _
 
+  @JsonProperty(required = true, defaultValue = "i += 1")
+  @JsonSchemaTitle("Update")
+  var update: String = _
+
+  @JsonProperty(required = true, defaultValue = "i < len(table)")
+  @JsonSchemaTitle("Condition")
+  var condition: String = _
+
   @JsonProperty(required = true, defaultValue = "table.iloc[0]")
   @JsonSchemaTitle("Output")
   var output: String = _
@@ -75,8 +83,11 @@ class LoopStartOpDesc extends LogicalOp {
        |class ProcessTableOperator(UDFTableOperator):
        |    @overrides
        |    def produce_state_on_finish(self, port: int) -> State:
+       |        table = Table(self._TableOperator__table_data[port])
        |        state = State(pass_to_all_downstream = True)
        |        $initialization
+       |        state["condition"] = $condition
+       |        $update
        |        state["i"] = i
        |        return state
        |

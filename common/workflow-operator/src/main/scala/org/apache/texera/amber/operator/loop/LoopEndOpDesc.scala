@@ -28,13 +28,7 @@ import org.apache.texera.amber.operator.LogicalOp
 import org.apache.texera.amber.operator.metadata.{OperatorGroupConstants, OperatorInfo}
 
 class LoopEndOpDesc extends LogicalOp {
-  @JsonProperty(required = true, defaultValue = "i += 1")
-  @JsonSchemaTitle("Update")
-  var update: String = _
 
-  @JsonProperty(required = true, defaultValue = "i < len(table)")
-  @JsonSchemaTitle("Condition")
-  var condition: String = _
 
   override def getPhysicalOp(
       workflowId: WorkflowIdentity,
@@ -75,9 +69,7 @@ class LoopEndOpDesc extends LogicalOp {
        |class ProcessLoopEndOperator(LoopEndOperator):
        |    @overrides
        |    def process_state(self, state: State, port: int) -> Optional[State]:
-       |      i = state['i']
-       |      $update
-       |      print(i)
+       |      print(state)
        |      return state
        |
        |    @overrides
