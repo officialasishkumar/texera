@@ -317,3 +317,9 @@ class LoopEndOperator(TableOperator):
 
     def close(self) -> None:
         pass
+
+    def condition(self):
+        return self.state["condition"]
+
+    def loop_start_id(self):
+        return self.state["LoopStartId"]

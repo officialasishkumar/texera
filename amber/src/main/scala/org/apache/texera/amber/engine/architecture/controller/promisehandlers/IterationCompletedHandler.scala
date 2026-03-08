@@ -17,31 +17,29 @@
  * under the License.
  */
 
-package org.apache.texera.amber.engine.architecture.worker.promisehandlers
+package org.apache.texera.amber.engine.architecture.controller.promisehandlers
 
 import com.twitter.util.Future
-import org.apache.texera.amber.engine.architecture.rpc.controlcommands.{
-  AsyncRPCContext,
-  EmptyRequest,
-  EndIterationRequest
-}
+import org.apache.texera.amber.engine.architecture.controller.{ControllerAsyncRPCHandlerInitializer, ExecutionStateUpdate}
+import org.apache.texera.amber.engine.architecture.rpc.controlcommands.{AsyncRPCContext, EmptyRequest, IterationCompletedRequest, QueryStatisticsRequest, StatisticsUpdateTarget}
 import org.apache.texera.amber.engine.architecture.rpc.controlreturns.EmptyReturn
-import org.apache.texera.amber.engine.architecture.worker.DataProcessorRPCHandlerInitializer
+import org.apache.texera.amber.engine.common.virtualidentity.util.SELF
 
-trait EndIterationHandler {
-  this: DataProcessorRPCHandlerInitializer =>
+/** indicate a worker has completed its execution
+  * i.e. received and processed all data from upstreams
+  * note that this doesn't mean all the output of this worker
+  * has been received by the downstream workers.
+  *
+  * possible sender: worker
+  */
+trait IterationCompletedHandler {
+  this: ControllerAsyncRPCHandlerInitializer =>
 
-  override def endIteration(
-      request: EndIterationRequest,
+  override def iterationCompleted(
+      msg: IterationCompletedRequest,
       ctx: AsyncRPCContext
   ): Future[EmptyReturn] = {
-    dp.executor match {
-      //case _: LoopEndOpExec =>
-      //workerInterface.nextIteration(EmptyRequest(), mkContext(request.worker))
-      case _ =>
-      //dp.processOnFinish()
-      //dp.outputManager.finalizeIteration(request.worker)
-    }
+    println("ergergergerg", msg)
     EmptyReturn()
   }
 }
