@@ -400,7 +400,6 @@ class QueryStatisticsRequest(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class IterationCompletedRequest(betterproto.Message):
     loop_start_id: "___core__.OperatorIdentity" = betterproto.message_field(1)
-    next: bool = betterproto.bool_field(2)
 
 
 @dataclass(eq=False, repr=False)

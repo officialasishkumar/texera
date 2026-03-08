@@ -21,13 +21,10 @@ package org.apache.texera.amber.engine.architecture.scheduling
 
 import com.twitter.util.Future
 import com.typesafe.scalalogging.LazyLogging
+import org.apache.texera.amber.core.virtualidentity.OperatorIdentity
 import org.apache.texera.amber.core.workflow.{GlobalPortIdentity, PhysicalLink}
-import org.apache.texera.amber.engine.architecture.common.{
-  AkkaActorRefMappingService,
-  AkkaActorService
-}
-import org.apache.texera.amber.engine.architecture.controller.ControllerConfig
-import org.apache.texera.amber.engine.architecture.controller.ExecutionStateUpdate
+import org.apache.texera.amber.engine.architecture.common.{AkkaActorRefMappingService, AkkaActorService}
+import org.apache.texera.amber.engine.architecture.controller.{ControllerConfig, ExecutionStateUpdate, WorkflowScheduler}
 import org.apache.texera.amber.engine.architecture.controller.execution.WorkflowExecution
 import org.apache.texera.amber.engine.common.rpc.AsyncRPCClient
 
@@ -35,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import scala.collection.mutable
 
 class WorkflowExecutionCoordinator(
-    getNextRegions: () => Set[Region],
+    workflowScheduler: WorkflowScheduler,
     workflowExecution: WorkflowExecution,
     controllerConfig: ControllerConfig,
     asyncRPCClient: AsyncRPCClient
@@ -83,7 +80,7 @@ class WorkflowExecutionCoordinator(
     }
 
     // All existing regions are completed. Start the next region (if any).
-    val nextRegions = getNextRegions()
+    val nextRegions = workflowScheduler.getNextRegions
     if (nextRegions.isEmpty) {
       if (workflowExecution.isCompleted && completionNotified.compareAndSet(false, true)) {
         asyncRPCClient.sendToClient(ExecutionStateUpdate(workflowExecution.getState))
@@ -129,6 +126,10 @@ class WorkflowExecutionCoordinator(
 
   def hasUnfinishedRegionCoordinators: Boolean = {
     regionExecutionCoordinators.values.exists(!_.isCompleted)
+  }
+
+  def loopBack(loopStartId: OperatorIdentity): Unit = {
+    workflowScheduler.schedule.loopBack(loopStartId)
   }
 
 }

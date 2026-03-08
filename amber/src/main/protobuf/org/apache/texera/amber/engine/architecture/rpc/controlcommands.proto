@@ -284,5 +284,4 @@ message QueryStatisticsRequest{
 
 message IterationCompletedRequest{
   core.OperatorIdentity LoopStartId = 1 [(scalapb.field).no_box = true];
-  bool next = 2;
 }

@@ -40,6 +40,7 @@ trait IterationCompletedHandler {
       ctx: AsyncRPCContext
   ): Future[EmptyReturn] = {
     println("ergergergerg", msg)
+    cp.workflowExecutionCoordinator.loopBack(msg.loopStartId)
     EmptyReturn()
   }
 }

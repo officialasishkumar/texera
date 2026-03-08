@@ -80,7 +80,7 @@ class LoopStartOpDesc extends LogicalOp {
   def generatePythonCode(): String = {
     s"""
        |from pytexera import *
-       |class ProcessTableOperator(UDFTableOperator):
+       |class ProcessLoopStartOperator(LoopStartOperator):
        |    @overrides
        |    def produce_state_on_finish(self, port: int) -> State:
        |        table = Table(self._TableOperator__table_data[port])

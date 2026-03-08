@@ -38,6 +38,7 @@ from core.models.internal_queue import (
     ECMElement,
     InternalQueueElement,
 )
+from core.models.operator import LoopEndOperator, LoopStartOperator
 from core.models.state import State
 from core.runnables.data_processor import DataProcessor
 from core.util import StoppableQueueBlockingRunnable, get_one_of
@@ -47,7 +48,7 @@ from proto.org.apache.texera.amber.core import (
     ActorVirtualIdentity,
     PortIdentity,
     ChannelIdentity,
-    EmbeddedControlMessageIdentity,
+    EmbeddedControlMessageIdentity, OperatorIdentity,
 )
 from proto.org.apache.texera.amber.engine.architecture.rpc import (
     ConsoleMessage,
@@ -60,7 +61,7 @@ from proto.org.apache.texera.amber.engine.architecture.rpc import (
     EmbeddedControlMessageType,
     EmbeddedControlMessage,
     AsyncRpcContext,
-    ControlRequest,
+    ControlRequest, IterationCompletedRequest,
 )
 from proto.org.apache.texera.amber.engine.architecture.worker import (
     WorkerState,
@@ -95,8 +96,10 @@ class MainLoop(StoppableQueueBlockingRunnable):
         # flush the buffered console prints
         self._check_and_report_console_messages(force_flush=True)
         controller_interface = self._async_rpc_client.controller_stub()
-        #controller_interface.iteration_completed(EmptyRequest())
-        self.context.executor_manager.executor.close()
+        executor = self.context.executor_manager.executor
+        if isinstance(executor, LoopEndOperator) and executor.condition():
+            controller_interface.iteration_completed(IterationCompletedRequest(OperatorIdentity(executor.loop_start_id())))
+        executor.close()
         # stop the data processing thread
         self.data_processor.stop()
         self.context.state_manager.transit_to(WorkerState.COMPLETED)
@@ -189,16 +192,18 @@ class MainLoop(StoppableQueueBlockingRunnable):
         output_state = self.context.state_processing_manager.get_output_state()
         self._switch_context()
         if output_state is not None:
-            for to, batch in self.context.output_manager.emit_state(output_state):
-                self._output_queue.put(
-                    DataElement(
-                        tag=ChannelIdentity(
-                            ActorVirtualIdentity(self.context.worker_id), to, False
-                        ),
-                        payload=batch,
+            if isinstance(self.context.executor_manager.executor, LoopStartOperator):
+                output_state.add("LoopStartId", self.context.worker_id.split('-', 1)[1].rsplit('-main-0', 1)[0])
+                for to, batch in self.context.output_manager.emit_state(output_state):
+                    self._output_queue.put(
+                        DataElement(
+                            tag=ChannelIdentity(
+                                ActorVirtualIdentity(self.context.worker_id), to, False
+                            ),
+                            payload=batch,
+                        )
                     )
-                )
-            self.context.output_manager.save_state_to_storage_if_needed(output_state)
+                self.context.output_manager.save_state_to_storage_if_needed(output_state)
 
     def process_tuple_with_udf(self) -> Iterator[Optional[Tuple]]:
         """

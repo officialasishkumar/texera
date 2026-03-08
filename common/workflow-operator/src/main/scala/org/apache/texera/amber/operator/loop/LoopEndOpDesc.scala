@@ -69,6 +69,7 @@ class LoopEndOpDesc extends LogicalOp {
        |class ProcessLoopEndOperator(LoopEndOperator):
        |    @overrides
        |    def process_state(self, state: State, port: int) -> Optional[State]:
+       |      self.state = state
        |      print(state)
        |      return state
        |
