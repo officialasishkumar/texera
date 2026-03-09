@@ -20,10 +20,12 @@
 package org.apache.texera.amber.engine.architecture.controller.promisehandlers
 
 import com.twitter.util.Future
-import org.apache.texera.amber.engine.architecture.controller.{ControllerAsyncRPCHandlerInitializer, ExecutionStateUpdate}
-import org.apache.texera.amber.engine.architecture.rpc.controlcommands.{AsyncRPCContext, EmptyRequest, IterationCompletedRequest, QueryStatisticsRequest, StatisticsUpdateTarget}
+import org.apache.texera.amber.engine.architecture.controller.ControllerAsyncRPCHandlerInitializer
+import org.apache.texera.amber.engine.architecture.rpc.controlcommands.{
+  AsyncRPCContext,
+  IterationCompletedRequest
+}
 import org.apache.texera.amber.engine.architecture.rpc.controlreturns.EmptyReturn
-import org.apache.texera.amber.engine.common.virtualidentity.util.SELF
 
 /** indicate a worker has completed its execution
   * i.e. received and processed all data from upstreams
