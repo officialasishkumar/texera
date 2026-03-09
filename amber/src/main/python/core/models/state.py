@@ -67,6 +67,12 @@ class State:
             schema=self.schema.as_arrow_schema(),
         )
 
+    def to_dict(self) -> dict:
+        dictionary = self.__dict__
+        del dictionary["passToAllDownstream"]
+        del dictionary["schema"]
+        return dictionary
+
     def __setattr__(self, key: str, value: any) -> None:
         self.add(key, value)
 

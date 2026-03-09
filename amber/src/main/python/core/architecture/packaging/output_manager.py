@@ -183,7 +183,6 @@ class OutputManager:
             return
 
         for uri in uris:
-            print(f"saving state to {uri}")
             writer = DocumentFactory.create_document(
                 uri.replace("/result", "/state"), state.schema
             ).writer(str(get_worker_index(self.worker_id)))

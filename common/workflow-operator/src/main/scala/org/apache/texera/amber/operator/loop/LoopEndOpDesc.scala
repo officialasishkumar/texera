@@ -76,10 +76,9 @@ class LoopEndOpDesc extends LogicalOp {
        |    @overrides
        |    def process_state(self, state: State, port: int) -> Optional[State]:
        |      from pickle import loads
-       |      self.state = state.__dict__
+       |      self.state = state.to_dict()
        |      self.state["table"] = loads(self.state["table"])
        |      exec("$update", {}, self.state)
-       |      print(self.state)
        |      return None
        |
        |    @overrides

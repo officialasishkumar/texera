@@ -330,4 +330,5 @@ class LoopEndOperator(TableOperator):
 
     def loop_start_id(self) -> str:
         del self.state["table"]
+        del self.state["output"]
         return self.state["LoopStartId"]

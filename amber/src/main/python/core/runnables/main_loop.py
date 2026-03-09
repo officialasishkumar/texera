@@ -18,6 +18,8 @@
 import threading
 import time
 import typing
+import uuid
+
 from loguru import logger
 from overrides import overrides
 from pampy import match
@@ -41,6 +43,7 @@ from core.models.internal_queue import (
 from core.models.operator import LoopEndOperator, LoopStartOperator
 from core.models.state import State
 from core.runnables.data_processor import DataProcessor
+from core.storage.document_factory import DocumentFactory
 from core.util import StoppableQueueBlockingRunnable, get_one_of
 from core.util.console_message.timestamp import current_time_in_local_timezone
 from core.util.customized_queue.queue_base import QueueElement
@@ -99,8 +102,13 @@ class MainLoop(StoppableQueueBlockingRunnable):
         executor = self.context.executor_manager.executor
         if isinstance(executor, LoopEndOperator) and executor.condition():
             controller_interface.iteration_completed(IterationCompletedRequest(OperatorIdentity(executor.loop_start_id())))
-
-        self.context.output_manager.save_state_to_storage_if_needed()
+            uri = executor.state["LoopStartStateURI"]
+            del executor.state["LoopStartStateURI"]
+            del executor.state["LoopStartId"]
+            state = State.from_dict(executor.state)
+            writer = DocumentFactory.create_document(uri, state.schema).writer(str(uuid.uuid4()))
+            writer.put_one(Tuple(vars(state)))
+            writer.close()
         executor.close()
         # stop the data processing thread
         self.data_processor.stop()
@@ -196,6 +204,7 @@ class MainLoop(StoppableQueueBlockingRunnable):
         if output_state is not None:
             if isinstance(self.context.executor_manager.executor, LoopStartOperator):
                 output_state.add("LoopStartId", self.context.worker_id.split('-', 1)[1].rsplit('-main-0', 1)[0])
+                output_state.add("LoopStartStateURI", self.context.input_manager.get_input_state_uri())
                 for to, batch in self.context.output_manager.emit_state(output_state):
                     self._output_queue.put(
                         DataElement(

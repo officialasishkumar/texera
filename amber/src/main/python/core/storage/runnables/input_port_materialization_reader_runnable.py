@@ -147,17 +147,7 @@ class InputPortMaterializationReaderRunnable(Runnable, Stoppable):
                 self.uri
             )
             self.emit_ecm("StartChannel", EmbeddedControlMessageType.NO_ALIGNMENT)
-            storage_iterator = self.materialization.get()
 
-            # Iterate and process tuples.
-            for tup in storage_iterator:
-                if self._stopped:
-                    break
-                # Each tuple is sent to the partitioner and converted to
-                # a batch-based iterator.
-                tup.cast_to_schema(self.tuple_schema)
-                for data_frame in self.tuple_to_batch_with_filter(tup):
-                    self.emit_payload(data_frame)
             try:
                 state_document, state_schema = DocumentFactory.open_document(
                     self.uri.replace("/result", "/state")
@@ -170,6 +160,18 @@ class InputPortMaterializationReaderRunnable(Runnable, Stoppable):
                         self.emit_payload(state_frame)
             except ValueError:
                 pass
+
+            storage_iterator = self.materialization.get()
+            # Iterate and process tuples.
+            for tup in storage_iterator:
+                if self._stopped:
+                    break
+                # Each tuple is sent to the partitioner and converted to
+                # a batch-based iterator.
+                tup.cast_to_schema(self.tuple_schema)
+                for data_frame in self.tuple_to_batch_with_filter(tup):
+                    self.emit_payload(data_frame)
+
 
             self.emit_ecm("EndChannel", EmbeddedControlMessageType.PORT_ALIGNMENT)
             self._finished = True
