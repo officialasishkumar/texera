@@ -99,6 +99,8 @@ class MainLoop(StoppableQueueBlockingRunnable):
         executor = self.context.executor_manager.executor
         if isinstance(executor, LoopEndOperator) and executor.condition():
             controller_interface.iteration_completed(IterationCompletedRequest(OperatorIdentity(executor.loop_start_id())))
+
+        self.context.output_manager.save_state_to_storage_if_needed()
         executor.close()
         # stop the data processing thread
         self.data_processor.stop()

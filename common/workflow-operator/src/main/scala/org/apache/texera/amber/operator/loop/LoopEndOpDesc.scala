@@ -28,7 +28,13 @@ import org.apache.texera.amber.operator.LogicalOp
 import org.apache.texera.amber.operator.metadata.{OperatorGroupConstants, OperatorInfo}
 
 class LoopEndOpDesc extends LogicalOp {
+  @JsonProperty(required = true, defaultValue = "i += 1")
+  @JsonSchemaTitle("Update")
+  var update: String = _
 
+  @JsonProperty(required = true, defaultValue = "i < len(table)")
+  @JsonSchemaTitle("Condition")
+  var condition: String = _
 
   override def getPhysicalOp(
       workflowId: WorkflowIdentity,
@@ -69,13 +75,17 @@ class LoopEndOpDesc extends LogicalOp {
        |class ProcessLoopEndOperator(LoopEndOperator):
        |    @overrides
        |    def process_state(self, state: State, port: int) -> Optional[State]:
-       |      self.state = state
-       |      print(state)
-       |      return state
+       |      from pickle import loads
+       |      self.state = state.__dict__
+       |      self.state["table"] = loads(self.state["table"])
+       |      exec("$update", {}, self.state)
+       |      print(self.state)
+       |      return None
        |
        |    @overrides
-       |    def process_table(self, table: Table, port: int) -> Iterator[Optional[TableLike]]:
-       |        yield table
+       |    def condition(self) -> None:
+       |      exec("output = $condition", {}, self.state)
+       |      return self.state["output"]
        |""".stripMargin
   }
 }

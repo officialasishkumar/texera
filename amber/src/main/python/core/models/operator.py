@@ -303,6 +303,12 @@ class LoopStartOperator(TableOperator):
     def process_table(self, table: Table, port: int) -> Iterator[Optional[TableLike]]:
         yield
 
+    @overrides.final
+    def produce_state_on_finish(self, port: int) -> State:
+        from pickle import dumps
+        self.state["table"] = dumps(Table(self._TableOperator__table_data[port]))
+        return State().from_dict(self.state)
+
     def close(self) -> None:
         pass
 
@@ -311,15 +317,17 @@ class LoopEndOperator(TableOperator):
     def open(self) -> None:
         pass
 
-    @abstractmethod
+    @overrides.final
     def process_table(self, table: Table, port: int) -> Iterator[Optional[TableLike]]:
-        yield
+        yield table
 
     def close(self) -> None:
         pass
 
-    def condition(self):
-        return self.state["condition"]
+    @abstractmethod
+    def condition(self) -> None:
+        pass
 
-    def loop_start_id(self):
+    def loop_start_id(self) -> str:
+        del self.state["table"]
         return self.state["LoopStartId"]

@@ -32,15 +32,7 @@ class LoopStartOpDesc extends LogicalOp {
   @JsonSchemaTitle("Initialization")
   var initialization: String = _
 
-  @JsonProperty(required = true, defaultValue = "i += 1")
-  @JsonSchemaTitle("Update")
-  var update: String = _
-
-  @JsonProperty(required = true, defaultValue = "i < len(table)")
-  @JsonSchemaTitle("Condition")
-  var condition: String = _
-
-  @JsonProperty(required = true, defaultValue = "table.iloc[0]")
+  @JsonProperty(required = true, defaultValue = "table.iloc[i]")
   @JsonSchemaTitle("Output")
   var output: String = _
 
@@ -82,19 +74,21 @@ class LoopStartOpDesc extends LogicalOp {
        |from pytexera import *
        |class ProcessLoopStartOperator(LoopStartOperator):
        |    @overrides
-       |    def produce_state_on_finish(self, port: int) -> State:
-       |        table = Table(self._TableOperator__table_data[port])
-       |        state = State(pass_to_all_downstream = True)
-       |        $initialization
-       |        state["condition"] = $condition
-       |        $update
-       |        state["i"] = i
-       |        return state
+       |    def open(self):
+       |        self.state = {}
+       |        exec("$initialization", {}, self.state)
+       |
+       |    @overrides
+       |    def process_state(self, state: State, port: int) -> Optional[State]:
+       |        print(self.state)
+       |        print("rgergergf")
+       |        return None
        |
        |    @overrides
        |    def process_table(self, table: Table, port: int) -> Iterator[Optional[TableLike]]:
-       |        $initialization
-       |        yield $output
+       |        self.state["table"] = table
+       |        exec("output = $output", {}, self.state)
+       |        yield self.state["output"]
        |""".stripMargin
   }
 }

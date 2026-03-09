@@ -58,30 +58,7 @@ class replace_print(ContextManager):
         :return:
         """
 
-        def wrapped_print(*args, **kwargs):
-            # use StringIO to obtain the written complete string from the original
-            # print function.
-            if "file" in kwargs:
-                self.builtins_print(*args, **kwargs)
-                return
-            with StringIO() as tmp_buf, redirect_stdout(tmp_buf):
-                self.builtins_print(*args, **kwargs)
-                complete_str = tmp_buf.getvalue()
-                console_message = ConsoleMessage(
-                    worker_id=self.worker_id,
-                    timestamp=current_time_in_local_timezone(),
-                    msg_type=ConsoleMessageType.PRINT,
-                    source=(
-                        f"{inspect.currentframe().f_back.f_globals['__name__']}"
-                        f":{inspect.currentframe().f_back.f_code.co_name}"
-                        f":{inspect.currentframe().f_back.f_lineno}"
-                    ),
-                    title=complete_str,
-                    message="",
-                )
-                self.buf.put(console_message)
-
-        builtins.print = wrapped_print
+        pass
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
         """

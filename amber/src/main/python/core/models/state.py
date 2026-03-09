@@ -27,7 +27,7 @@ from .schema.attribute_type import FROM_PYOBJECT_MAPPING
 @dataclass
 class State:
     def __init__(
-        self, table: Optional[Table] = None, pass_to_all_downstream: bool = False
+        self, table: Optional[Table] = None, pass_to_all_downstream: bool = True
     ):
         self.schema = Schema()
         self.passToAllDownstream = pass_to_all_downstream
@@ -40,6 +40,13 @@ class State:
         obj = cls()
         obj.__dict__.update(tuple.as_dict())
         obj.schema = schema
+        return obj
+
+    @classmethod
+    def from_dict(cls, dictionary):
+        obj = cls()
+        for item in dictionary:
+            obj.add(item, dictionary[item])
         return obj
 
     def add(
