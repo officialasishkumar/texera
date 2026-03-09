@@ -94,12 +94,17 @@ class InputPortMaterializationReaderThread(
       }
       // Flush any remaining tuples in the buffer.
       if (buffer.nonEmpty) flush()
-      val state_document = DocumentFactory.openDocument(uri.resolve("state"))._1.asInstanceOf[VirtualDocument[Tuple]]
-      val stateReadIterator = state_document.get()
 
-      if (stateReadIterator.hasNext) {
-        val state = State(Option(stateReadIterator.next()))
-        inputMessageQueue.put(FIFOMessageElement(WorkflowFIFOMessage(channelId, getSequenceNumber, StateFrame(state))))
+      try {
+        val state_document = DocumentFactory.openDocument(uri.resolve("state"))._1.asInstanceOf[VirtualDocument[Tuple]]
+        val stateReadIterator = state_document.get()
+
+        if (stateReadIterator.hasNext) {
+          val state = State(Option(stateReadIterator.next()))
+          inputMessageQueue.put(FIFOMessageElement(WorkflowFIFOMessage(channelId, getSequenceNumber, StateFrame(state))))
+        }
+      } catch {
+        case _: Exception =>
       }
 
       emitECM(METHOD_END_CHANNEL, PORT_ALIGNMENT)
