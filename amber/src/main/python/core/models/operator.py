@@ -306,6 +306,7 @@ class LoopStartOperator(TableOperator):
     @overrides.final
     def produce_state_on_finish(self, port: int) -> State:
         from pickle import dumps
+
         self.state["table"] = dumps(Table(self._TableOperator__table_data[port]))
         return State().from_dict(self.state)
 

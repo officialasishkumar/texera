@@ -25,15 +25,32 @@ import org.apache.texera.amber.core.state.State
 import org.apache.texera.amber.core.storage.DocumentFactory
 import org.apache.texera.amber.core.storage.model.VirtualDocument
 import org.apache.texera.amber.core.tuple.Tuple
-import org.apache.texera.amber.core.virtualidentity.{ActorVirtualIdentity, ChannelIdentity, EmbeddedControlMessageIdentity}
+import org.apache.texera.amber.core.virtualidentity.{
+  ActorVirtualIdentity,
+  ChannelIdentity,
+  EmbeddedControlMessageIdentity
+}
 import org.apache.texera.amber.engine.architecture.messaginglayer.OutputManager.toPartitioner
-import org.apache.texera.amber.engine.architecture.rpc.controlcommands.EmbeddedControlMessageType.{NO_ALIGNMENT, PORT_ALIGNMENT}
+import org.apache.texera.amber.engine.architecture.rpc.controlcommands.EmbeddedControlMessageType.{
+  NO_ALIGNMENT,
+  PORT_ALIGNMENT
+}
 import org.apache.texera.amber.engine.architecture.rpc.controlcommands._
 import org.apache.texera.amber.engine.architecture.rpc.controlreturns.EmptyReturn
-import org.apache.texera.amber.engine.architecture.rpc.workerservice.WorkerServiceGrpc.{METHOD_END_CHANNEL, METHOD_START_CHANNEL}
+import org.apache.texera.amber.engine.architecture.rpc.workerservice.WorkerServiceGrpc.{
+  METHOD_END_CHANNEL,
+  METHOD_START_CHANNEL
+}
 import org.apache.texera.amber.engine.architecture.sendsemantics.partitionings.Partitioning
-import org.apache.texera.amber.engine.architecture.worker.WorkflowWorker.{DPInputQueueElement, FIFOMessageElement}
-import org.apache.texera.amber.engine.common.ambermessage.{DataFrame, StateFrame, WorkflowFIFOMessage}
+import org.apache.texera.amber.engine.architecture.worker.WorkflowWorker.{
+  DPInputQueueElement,
+  FIFOMessageElement
+}
+import org.apache.texera.amber.engine.common.ambermessage.{
+  DataFrame,
+  StateFrame,
+  WorkflowFIFOMessage
+}
 import org.apache.texera.amber.util.VirtualIdentityUtils.getFromActorIdForInputPortStorage
 
 import java.net.URI
@@ -96,12 +113,15 @@ class InputPortMaterializationReaderThread(
       if (buffer.nonEmpty) flush()
 
       try {
-        val state_document = DocumentFactory.openDocument(uri.resolve("state"))._1.asInstanceOf[VirtualDocument[Tuple]]
+        val state_document =
+          DocumentFactory.openDocument(uri.resolve("state"))._1.asInstanceOf[VirtualDocument[Tuple]]
         val stateReadIterator = state_document.get()
 
         if (stateReadIterator.hasNext) {
           val state = State(Option(stateReadIterator.next()))
-          inputMessageQueue.put(FIFOMessageElement(WorkflowFIFOMessage(channelId, getSequenceNumber, StateFrame(state))))
+          inputMessageQueue.put(
+            FIFOMessageElement(WorkflowFIFOMessage(channelId, getSequenceNumber, StateFrame(state)))
+          )
         }
       } catch {
         case _: Exception =>

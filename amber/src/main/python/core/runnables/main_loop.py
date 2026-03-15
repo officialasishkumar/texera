@@ -51,7 +51,8 @@ from proto.org.apache.texera.amber.core import (
     ActorVirtualIdentity,
     PortIdentity,
     ChannelIdentity,
-    EmbeddedControlMessageIdentity, OperatorIdentity,
+    EmbeddedControlMessageIdentity,
+    OperatorIdentity,
 )
 from proto.org.apache.texera.amber.engine.architecture.rpc import (
     ConsoleMessage,
@@ -64,7 +65,8 @@ from proto.org.apache.texera.amber.engine.architecture.rpc import (
     EmbeddedControlMessageType,
     EmbeddedControlMessage,
     AsyncRpcContext,
-    ControlRequest, IterationCompletedRequest,
+    ControlRequest,
+    IterationCompletedRequest,
 )
 from proto.org.apache.texera.amber.engine.architecture.worker import (
     WorkerState,
@@ -101,12 +103,16 @@ class MainLoop(StoppableQueueBlockingRunnable):
         controller_interface = self._async_rpc_client.controller_stub()
         executor = self.context.executor_manager.executor
         if isinstance(executor, LoopEndOperator) and executor.condition():
-            controller_interface.iteration_completed(IterationCompletedRequest(OperatorIdentity(executor.loop_start_id())))
+            controller_interface.iteration_completed(
+                IterationCompletedRequest(OperatorIdentity(executor.loop_start_id()))
+            )
             uri = executor.state["LoopStartStateURI"]
             del executor.state["LoopStartStateURI"]
             del executor.state["LoopStartId"]
             state = State.from_dict(executor.state)
-            writer = DocumentFactory.create_document(uri, state.schema).writer(str(uuid.uuid4()))
+            writer = DocumentFactory.create_document(uri, state.schema).writer(
+                str(uuid.uuid4())
+            )
             writer.put_one(Tuple(vars(state)))
             writer.close()
         executor.close()
@@ -203,8 +209,14 @@ class MainLoop(StoppableQueueBlockingRunnable):
         self._switch_context()
         if output_state is not None:
             if isinstance(self.context.executor_manager.executor, LoopStartOperator):
-                output_state.add("LoopStartId", self.context.worker_id.split('-', 1)[1].rsplit('-main-0', 1)[0])
-                output_state.add("LoopStartStateURI", self.context.input_manager.get_input_state_uri())
+                output_state.add(
+                    "LoopStartId",
+                    self.context.worker_id.split("-", 1)[1].rsplit("-main-0", 1)[0],
+                )
+                output_state.add(
+                    "LoopStartStateURI",
+                    self.context.input_manager.get_input_state_uri(),
+                )
                 for to, batch in self.context.output_manager.emit_state(output_state):
                     self._output_queue.put(
                         DataElement(
@@ -214,7 +226,9 @@ class MainLoop(StoppableQueueBlockingRunnable):
                             payload=batch,
                         )
                     )
-                self.context.output_manager.save_state_to_storage_if_needed(output_state)
+                self.context.output_manager.save_state_to_storage_if_needed(
+                    output_state
+                )
 
     def process_tuple_with_udf(self) -> Iterator[Optional[Tuple]]:
         """

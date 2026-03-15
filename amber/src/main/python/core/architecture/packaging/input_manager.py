@@ -175,4 +175,6 @@ class InputManager:
             )
 
     def get_input_state_uri(self):
-        return next(iter(self._input_port_mat_reader_runnables.values()))[0].uri.replace("/result", "/state")
+        return next(iter(self._input_port_mat_reader_runnables.values()))[
+            0
+        ].uri.replace("/result", "/state")
