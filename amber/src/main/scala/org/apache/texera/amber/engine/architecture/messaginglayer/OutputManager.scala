@@ -236,12 +236,16 @@ class OutputManager(
   }
 
   def saveStateToStorageIfNeeded(state: State, outputPortId: Int): Unit = {
-    val writer = DocumentFactory
-      .createDocument(this.storageUris(outputPortId).resolve("state"), state.schema)
-      .writer(VirtualIdentityUtils.getWorkerIndex(actorId).toString)
-      .asInstanceOf[BufferedItemWriter[Tuple]]
-    writer.putOne(state.toTuple)
-    writer.close()
+    try {
+      val writer = DocumentFactory
+        .createDocument(storageUris(outputPortId).resolve("state"), state.schema)
+        .writer(VirtualIdentityUtils.getWorkerIndex(actorId).toString)
+        .asInstanceOf[BufferedItemWriter[Tuple]]
+      writer.putOne(state.toTuple)
+      writer.close()
+    } catch {
+      case _: Exception => ()
+    }
   }
 
   /**
