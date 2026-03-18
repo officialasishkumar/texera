@@ -80,8 +80,10 @@ class LoopStartOpDesc extends LogicalOp {
        |
        |    @overrides
        |    def process_state(self, state: State, port: int) -> Optional[State]:
-       |        self.state.update(state.to_dict())
-       |        print(self.state)
+       |        state_dict = state.to_dict()
+       |        if "LoopStartStateURI" in state_dict:
+       |            return state_dict
+       |        self.state.update(state_dict)
        |        return None
        |
        |    @overrides
