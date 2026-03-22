@@ -75,16 +75,8 @@ class LoopStartOpDesc extends LogicalOp {
        |class ProcessLoopStartOperator(LoopStartOperator):
        |    @overrides
        |    def open(self):
-       |        self.state = {}
+       |        self.state = {"loop_counter": 0}
        |        exec("$initialization", {}, self.state)
-       |
-       |    @overrides
-       |    def process_state(self, state: State, port: int) -> Optional[State]:
-       |        state_dict = state.to_dict()
-       |        if "LoopStartStateURI" in state_dict:
-       |            return state_dict
-       |        self.state.update(state_dict)
-       |        return None
        |
        |    @overrides
        |    def process_table(self, table: Table, port: int) -> Iterator[Optional[TableLike]]:

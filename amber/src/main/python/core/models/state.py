@@ -68,7 +68,7 @@ class State:
         )
 
     def to_dict(self) -> dict:
-        dictionary = self.__dict__
+        dictionary = self.__dict__.copy()
         del dictionary["passToAllDownstream"]
         del dictionary["schema"]
         return dictionary

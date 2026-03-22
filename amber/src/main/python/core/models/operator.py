@@ -304,9 +304,17 @@ class LoopStartOperator(TableOperator):
         yield
 
     @overrides.final
+    def process_state(self, state: State, port: int) -> Optional[State]:
+        state_dict = state.to_dict()
+        if "LoopStartStateURI" in state_dict:
+            state["loop_counter"] += 1
+            return state
+        self.state.update(state_dict)
+        return None
+
+    @overrides.final
     def produce_state_on_finish(self, port: int) -> State:
         from pickle import dumps
-
         self.state["table"] = dumps(Table(self._TableOperator__table_data[port]))
         return State().from_dict(self.state)
 
