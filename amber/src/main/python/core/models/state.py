@@ -52,11 +52,12 @@ class State:
     def add(
         self, key: str, value: any, value_type: Optional[AttributeType] = None
     ) -> None:
+        if key not in self.__dict__:
+            if value_type is not None:
+                self.schema.add(key, value_type)
+            elif key != "schema":
+                self.schema.add(key, FROM_PYOBJECT_MAPPING[type(value)])
         self.__dict__[key] = value
-        if value_type is not None:
-            self.schema.add(key, value_type)
-        elif key != "schema":
-            self.schema.add(key, FROM_PYOBJECT_MAPPING[type(value)])
 
     def get(self, key: str) -> any:
         return self.__dict__[key]
