@@ -135,3 +135,38 @@ class DocumentFactory:
             raise NotImplementedError(
                 f"Unsupported URI scheme: {parsed_uri.scheme} for opening the document"
             )
+
+    @staticmethod
+    def document_exists(uri: str) -> bool:
+        """Return True if the document exists for the given URI.
+
+        This is a non-throwing helper for callers that want to probe storage
+        existence (e.g., optional state materialization) without relying on
+        exception control-flow.
+
+        Currently supports the same URI schemes/resource types as
+        `open_document`.
+        """
+
+        parsed_uri = urlparse(uri)
+        if parsed_uri.scheme != VFSURIFactory.VFS_FILE_URI_SCHEME:
+            raise NotImplementedError(
+                f"Unsupported URI scheme: {parsed_uri.scheme} for checking document existence"
+            )
+
+        _, _, _, resource_type = VFSURIFactory.decode_uri(uri)
+        match resource_type:
+            case VFSResourceType.RESULT:
+                namespace = StorageConfig.ICEBERG_TABLE_RESULT_NAMESPACE
+            case VFSResourceType.STATE:
+                namespace = "state"
+            case _:
+                raise ValueError(f"Resource type {resource_type} is not supported")
+
+        storage_key = DocumentFactory.sanitize_uri_path(parsed_uri)
+        table = load_table_metadata(
+            IcebergCatalogInstance.get_instance(),
+            namespace,
+            storage_key,
+        )
+        return table is not None
