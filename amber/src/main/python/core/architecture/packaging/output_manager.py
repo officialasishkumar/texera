@@ -183,8 +183,11 @@ class OutputManager:
             return
 
         for uri in uris:
+            state_uri = uri.replace("/result", "/state")
+            exist = DocumentFactory.document_exists(state_uri)
+            print("wfefwe",exist)
             writer = DocumentFactory.create_document(
-                uri.replace("/result", "/state"), state.schema
+                state_uri, state.schema
             ).writer(str(get_worker_index(self.worker_id)))
             writer.put_one(Tuple(vars(state)))
             writer.close()

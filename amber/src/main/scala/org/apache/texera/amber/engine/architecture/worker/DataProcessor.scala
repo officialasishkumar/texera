@@ -126,7 +126,7 @@ class DataProcessor(
       val outputState = executor.processState(state, port)
       if (outputState.isDefined) {
         outputManager.emitState(outputState.get)
-        outputManager.saveStateToStorageIfNeeded(state, port)
+        outputManager.saveStateToStorageIfNeeded(state)
       }
     } catch safely {
       case e =>
