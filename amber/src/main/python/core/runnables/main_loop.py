@@ -217,18 +217,18 @@ class MainLoop(StoppableQueueBlockingRunnable):
                     "LoopStartStateURI",
                     self.context.input_manager.get_input_state_uri(),
                 )
-                for to, batch in self.context.output_manager.emit_state(output_state):
-                    self._output_queue.put(
-                        DataElement(
-                            tag=ChannelIdentity(
-                                ActorVirtualIdentity(self.context.worker_id), to, False
-                            ),
-                            payload=batch,
-                        )
+            for to, batch in self.context.output_manager.emit_state(output_state):
+                self._output_queue.put(
+                    DataElement(
+                        tag=ChannelIdentity(
+                            ActorVirtualIdentity(self.context.worker_id), to, False
+                        ),
+                        payload=batch,
                     )
-                self.context.output_manager.save_state_to_storage_if_needed(
-                    output_state
                 )
+            self.context.output_manager.save_state_to_storage_if_needed(
+                output_state
+            )
 
     def process_tuple_with_udf(self) -> Iterator[Optional[Tuple]]:
         """
@@ -273,6 +273,7 @@ class MainLoop(StoppableQueueBlockingRunnable):
 
     def _process_state(self, state_: State) -> None:
         self.context.state_processing_manager.current_input_state = state_
+        self._switch_context()
         self.process_input_state()
         self._check_and_process_control()
 
