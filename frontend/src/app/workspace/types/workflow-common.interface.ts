@@ -55,7 +55,6 @@ export interface PortDescription
   extends Readonly<{
     portID: string;
     displayName?: string;
-    allowMultiInputs?: boolean;
     isDynamicPort?: boolean;
     partitionRequirement?: PartitionInfo;
     dependencies?: { id: number; internal: boolean }[];

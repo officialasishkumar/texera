@@ -31,7 +31,6 @@ import { CustomJSONSchema7 } from "./custom-json-schema.interface";
 export interface InputPortInfo
   extends Readonly<{
     displayName?: string;
-    allowMultiLinks?: boolean;
     dependencies?: { id: number; internal: boolean }[];
   }> {}
 
@@ -107,7 +106,7 @@ export function areOperatorSchemasEqual(schema1: OperatorSchema, schema2: Operat
     const port1 = meta1.inputPorts[i];
     const port2 = meta2.inputPorts[i];
 
-    if (port1.displayName !== port2.displayName || port1.allowMultiLinks !== port2.allowMultiLinks) {
+    if (port1.displayName !== port2.displayName) {
       return false;
     }
   }

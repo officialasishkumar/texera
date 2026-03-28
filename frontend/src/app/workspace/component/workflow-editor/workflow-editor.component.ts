@@ -1045,20 +1045,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewInit, OnDestroy
     if (isDuplicateLink) {
       return false;
     }
-
-    let allowMultiInput = false;
-    if (this.workflowActionService.getTexeraGraph().hasOperator(targetCellID)) {
-      const portIndex = this.workflowActionService
-        .getTexeraGraph()
-        .getOperator(targetCellID)
-        .inputPorts.findIndex(p => p.portID === targetPortID);
-      if (portIndex >= 0) {
-        const portInfo =
-          this.dynamicSchemaService.getDynamicSchema(targetCellID).additionalMetadata.inputPorts[portIndex];
-        allowMultiInput = portInfo?.allowMultiLinks ?? false;
-      }
-    }
-    return !(connectedLinksToTargetPort.length > 0 && !allowMultiInput);
+    return !(connectedLinksToTargetPort.length > 0);
   }
 
   /**

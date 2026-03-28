@@ -251,7 +251,6 @@ export class WorkflowActionService {
     const port: PortDescription = {
       portID,
       displayName: "",
-      allowMultiInputs,
       isDynamicPort: true,
       dependencies: [],
     };
