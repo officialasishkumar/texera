@@ -827,7 +827,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewInit, OnDestroy
       .pipe(untilDestroyed(this))
       .subscribe(elementView => {
         if (this.workflowActionService.getTexeraGraph().hasOperator(elementView.model.id.toString())) {
-          this.workflowActionService.addPort(elementView.model.id.toString(), true, false);
+          this.workflowActionService.addPort(elementView.model.id.toString(), true);
         }
       });
     fromJointPaperEvent(this.paper, "element:add-output-port")
