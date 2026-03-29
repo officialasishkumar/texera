@@ -1042,10 +1042,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewInit, OnDestroy
       connectedLinksToTargetPort.filter(
         link => link.source.operatorID === sourceCellID && link.source.portID === sourcePortID
       ).length > 0;
-    if (isDuplicateLink) {
-      return false;
-    }
-    return !(connectedLinksToTargetPort.length > 0);
+
+    return !isDuplicateLink;
   }
 
   /**

@@ -93,7 +93,6 @@ import org.apache.texera.amber.operator.udf.java.JavaUDFOpDesc
 import org.apache.texera.amber.operator.udf.python._
 import org.apache.texera.amber.operator.udf.python.source.PythonUDFSourceOpDescV2
 import org.apache.texera.amber.operator.udf.r.{RUDFOpDesc, RUDFSourceOpDesc}
-import org.apache.texera.amber.operator.union.UnionOpDesc
 import org.apache.texera.amber.operator.unneststring.UnnestStringOpDesc
 import org.apache.texera.amber.operator.visualization.DotPlot.DotPlotOpDesc
 import org.apache.texera.amber.operator.visualization.IcicleChart.IcicleChartOpDesc
@@ -181,7 +180,6 @@ trait StateTransferFunc
     new Type(value = classOf[SpecializedFilterOpDesc], name = "Filter"),
     new Type(value = classOf[ProjectionOpDesc], name = "Projection"),
     new Type(value = classOf[StripChartOpDesc], name = "StripChart"),
-    new Type(value = classOf[UnionOpDesc], name = "Union"),
     new Type(value = classOf[KeywordSearchOpDesc], name = "KeywordSearch"),
     new Type(value = classOf[SubstringSearchOpDesc], name = "SubstringSearch"),
     new Type(value = classOf[AggregateOpDesc], name = "Aggregate"),

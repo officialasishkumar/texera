@@ -15,7 +15,6 @@
         {
           "portID": "output-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false
         }
       ],
@@ -43,7 +42,6 @@
         {
           "portID": "input-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false,
           "dependencies": []
         }
@@ -52,7 +50,6 @@
         {
           "portID": "output-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false
         }
       ],
@@ -86,7 +83,6 @@
         {
           "portID": "input-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false,
           "dependencies": []
         }
@@ -95,7 +91,6 @@
         {
           "portID": "output-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false
         }
       ],
@@ -128,7 +123,6 @@
         {
           "portID": "input-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false,
           "dependencies": []
         }
@@ -137,7 +131,6 @@
         {
           "portID": "output-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false
         }
       ],
@@ -160,7 +153,6 @@
         {
           "portID": "input-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false,
           "dependencies": []
         }
@@ -169,13 +161,11 @@
         {
           "portID": "output-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false
         },
         {
           "portID": "output-1",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false
         }
       ],
@@ -198,7 +188,6 @@
         {
           "portID": "input-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false,
           "dependencies": []
         }
@@ -207,13 +196,11 @@
         {
           "portID": "output-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false
         },
         {
           "portID": "output-1",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false
         }
       ],
@@ -236,14 +223,12 @@
         {
           "portID": "input-0",
           "displayName": "training",
-          "allowMultiInputs": false,
           "isDynamicPort": false,
           "dependencies": []
         },
         {
           "portID": "input-1",
           "displayName": "testing",
-          "allowMultiInputs": false,
           "isDynamicPort": false,
           "dependencies": [
             {
@@ -257,7 +242,6 @@
         {
           "portID": "output-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false
         }
       ],
@@ -280,14 +264,12 @@
         {
           "portID": "input-0",
           "displayName": "model",
-          "allowMultiInputs": false,
           "isDynamicPort": false,
           "dependencies": []
         },
         {
           "portID": "input-1",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false,
           "dependencies": [
             {
@@ -301,7 +283,6 @@
         {
           "portID": "output-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false
         }
       ],
@@ -324,14 +305,12 @@
         {
           "portID": "input-0",
           "displayName": "model",
-          "allowMultiInputs": false,
           "isDynamicPort": false,
           "dependencies": []
         },
         {
           "portID": "input-1",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false,
           "dependencies": [
             {
@@ -345,7 +324,6 @@
         {
           "portID": "output-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false
         }
       ],
@@ -371,7 +349,6 @@
         {
           "portID": "input-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false,
           "dependencies": []
         }
@@ -380,7 +357,6 @@
         {
           "portID": "output-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false
         }
       ],
@@ -406,7 +382,6 @@
         {
           "portID": "input-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false,
           "dependencies": []
         }
@@ -415,7 +390,6 @@
         {
           "portID": "output-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false
         }
       ],
@@ -438,7 +412,6 @@
         {
           "portID": "input-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false,
           "dependencies": []
         }
@@ -447,13 +420,11 @@
         {
           "portID": "output-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false
         },
         {
           "portID": "output-1",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false
         }
       ],
@@ -476,7 +447,6 @@
         {
           "portID": "input-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false,
           "dependencies": []
         }
@@ -485,13 +455,11 @@
         {
           "portID": "output-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false
         },
         {
           "portID": "output-1",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false
         }
       ],
@@ -514,14 +482,12 @@
         {
           "portID": "input-0",
           "displayName": "training",
-          "allowMultiInputs": false,
           "isDynamicPort": false,
           "dependencies": []
         },
         {
           "portID": "input-1",
           "displayName": "testing",
-          "allowMultiInputs": false,
           "isDynamicPort": false,
           "dependencies": [
             {
@@ -535,7 +501,6 @@
         {
           "portID": "output-0",
           "displayName": "",
-          "allowMultiInputs": false,
           "isDynamicPort": false
         }
       ],
