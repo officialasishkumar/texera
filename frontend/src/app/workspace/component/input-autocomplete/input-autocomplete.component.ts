@@ -17,7 +17,7 @@
  * under the License.
  */
 
-import { Component } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import { FieldType, FieldTypeConfig } from "@ngx-formly/core";
 import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
 import { WorkflowActionService } from "../../service/workflow-graph/model/workflow-action.service";
@@ -32,13 +32,23 @@ import { GuiConfigService } from "../../../common/service/gui-config.service";
   templateUrl: "./input-autocomplete.component.html",
   styleUrls: ["input-autocomplete.component.scss"],
 })
-export class InputAutoCompleteComponent extends FieldType<FieldTypeConfig> {
+export class InputAutoCompleteComponent extends FieldType<FieldTypeConfig> implements OnInit {
+  private connectedToInputPort = false;
+
   constructor(
     private modalService: NzModalService,
     public workflowActionService: WorkflowActionService,
     private config: GuiConfigService
   ) {
     super();
+  }
+
+  ngOnInit(): void {
+    this.refreshInputPortConnectionState();
+    this.workflowActionService
+      .workflowChanged()
+      .pipe(untilDestroyed(this))
+      .subscribe(() => this.refreshInputPortConnectionState());
   }
 
   onClickOpenFileSelectionModal(): void {
@@ -67,6 +77,12 @@ export class InputAutoCompleteComponent extends FieldType<FieldTypeConfig> {
     });
   }
 
+  onClickDeleteSelectedFile(): void {
+    this.formControl.setValue(null);
+    this.formControl.markAsDirty();
+    this.formControl.markAsTouched();
+  }
+
   get enableDatasetSource(): boolean {
     return this.config.env.selectingFilesFromDatasetsEnabled;
   }
@@ -75,7 +91,23 @@ export class InputAutoCompleteComponent extends FieldType<FieldTypeConfig> {
     return this.enableDatasetSource;
   }
 
+  get isInputPortConnected(): boolean {
+    return this.connectedToInputPort;
+  }
+
   get selectedFilePath(): string | null {
     return this.formControl.value;
+  }
+
+  private refreshInputPortConnectionState(): void {
+    const operatorID = this.props["operatorID"] as string | undefined;
+    if (!operatorID) {
+      this.connectedToInputPort = false;
+      return;
+    }
+    this.connectedToInputPort = this.workflowActionService
+      .getTexeraGraph()
+      .getInputLinksByOperatorId(operatorID)
+      .some(link => link.target.portID === "input-0");
   }
 }

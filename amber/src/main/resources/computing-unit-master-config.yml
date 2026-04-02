@@ -31,7 +31,7 @@ server:
     appenders: []
 
 logging:
-  level: ${TEXERA_SERVICE_LOG_LEVEL:-INFO}
+  level: ERROR
   loggers:
     "io.dropwizard": ${TEXERA_SERVICE_LOG_LEVEL:-INFO}
   appenders:

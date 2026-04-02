@@ -431,13 +431,19 @@ case class PhysicalOp(
       }
     }
 
-    // Extract input schemas, checking if all are defined
+    // Extract the schemas that are currently available.
     val inputSchemas = updatedOp.inputPorts.collect {
       case (portId, (_, _, Right(schema))) => portId -> schema
     }
 
-    if (updatedOp.inputPorts.size == inputSchemas.size) {
-      // All input schemas are available, propagate to output schema
+    val readyForPropagation = updatedOp.inputPorts.forall {
+      case (_, (_, links, Right(_))) => true
+      case (_, (_, links, Left(_)))  => links.isEmpty
+    }
+
+    if (readyForPropagation) {
+      // All linked input schemas are available, propagate to output schema.
+      // Unlinked input ports are ignored so optional ports do not block output inference.
       val schemaPropagationResult = Try(propagateSchema.func(inputSchemas))
       schemaPropagationResult match {
         case Success(schemaMapping) =>

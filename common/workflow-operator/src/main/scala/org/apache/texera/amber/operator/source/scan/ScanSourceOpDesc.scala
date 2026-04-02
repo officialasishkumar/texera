@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import org.apache.texera.amber.core.storage.FileResolver
 import org.apache.texera.amber.core.tuple.Schema
-import org.apache.texera.amber.core.workflow.OutputPort
+import org.apache.texera.amber.core.workflow.{InputPort, OutputPort}
 import org.apache.texera.amber.operator.metadata.{OperatorGroupConstants, OperatorInfo}
 import org.apache.texera.amber.operator.source.SourceOperatorDescriptor
 import org.apache.commons.lang3.builder.EqualsBuilder
@@ -39,7 +39,7 @@ abstract class ScanSourceOpDesc extends SourceOperatorDescriptor {
   @JsonIgnore
   var INFER_READ_LIMIT: Int = 100
 
-  @JsonProperty(required = true)
+  @JsonProperty()
   @JsonSchemaTitle("File")
   @JsonDeserialize(contentAs = classOf[java.lang.String])
   var fileName: Option[String] = None
@@ -71,7 +71,7 @@ abstract class ScanSourceOpDesc extends SourceOperatorDescriptor {
       userFriendlyName = s"${fileTypeName.getOrElse("Unknown")} File Scan",
       operatorDescription = s"Scan data from a ${fileTypeName.getOrElse("Unknown")} file",
       OperatorGroupConstants.INPUT_GROUP,
-      inputPorts = List.empty,
+      inputPorts = List(InputPort(displayName = "Filename")),
       outputPorts = List(OutputPort())
     )
   }

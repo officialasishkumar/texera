@@ -19,7 +19,6 @@
 
 package org.apache.texera.amber.operator.source.scan
 
-import org.apache.texera.amber.core.executor.SourceOperatorExecutor
 import org.apache.texera.amber.core.storage.DocumentFactory
 import org.apache.texera.amber.core.tuple.AttributeTypeUtils.parseField
 import org.apache.texera.amber.core.tuple.{LargeBinary, TupleLike}
@@ -36,15 +35,18 @@ import scala.jdk.CollectionConverters.IteratorHasAsScala
 
 class FileScanSourceOpExec private[scan] (
     descString: String
-) extends SourceOperatorExecutor {
-  private val desc: FileScanSourceOpDesc =
+) extends InputFileSourceOpExec {
+  override protected val desc: FileScanSourceOpDesc =
     objectMapper.readValue(descString, classOf[FileScanSourceOpDesc])
 
   @throws[IOException]
   override def produceTuple(): Iterator[TupleLike] = {
-    val is: InputStream =
-      DocumentFactory.openReadonlyDocument(new URI(desc.fileName.get)).asInputStream()
+    resolvedInputFileNames.iterator.flatMap(produceTuplesForFile)
+  }
 
+  private def produceTuplesForFile(resolvedFileName: String): Iterator[TupleLike] = {
+    val is: InputStream =
+      DocumentFactory.openReadonlyDocument(new URI(resolvedFileName)).asInputStream()
     val closeables = mutable.ArrayBuffer.empty[AutoCloseable]
     var zipIn: ZipArchiveInputStream = null
     var archiveStream: InputStream = null

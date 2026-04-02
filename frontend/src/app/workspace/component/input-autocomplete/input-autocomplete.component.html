@@ -18,22 +18,37 @@
 -->
 
 <div [ngClass]="{'input-autocomplete-container': isFileSelectionEnabled}">
-  <input
-    *ngIf="selectedFilePath || !isFileSelectionEnabled"
-    nz-input
-    [readOnly]="isFileSelectionEnabled"
-    required
-    [formControl]="formControl"
-    [formlyAttributes]="field" />
-  <button
-    *ngIf="isFileSelectionEnabled"
-    nz-button
-    class="file-select-button"
-    nzSize="small"
-    (click)="isFileSelectionEnabled && onClickOpenFileSelectionModal()">
-    {{ selectedFilePath ? 'Reselect File' : 'Select File' }}
-  </button>
+  <ng-container *ngIf="!isInputPortConnected; else connectedInputHint">
+    <input
+      *ngIf="selectedFilePath || !isFileSelectionEnabled"
+      nz-input
+      [readOnly]="isFileSelectionEnabled"
+      required
+      [formControl]="formControl"
+      [formlyAttributes]="field" />
+    <button
+      *ngIf="isFileSelectionEnabled"
+      nz-button
+      class="file-select-button"
+      nzSize="small"
+      (click)="isFileSelectionEnabled && onClickOpenFileSelectionModal()">
+      {{ selectedFilePath ? 'Reselect File' : 'Select File' }}
+    </button>
+    <button
+      *ngIf="isFileSelectionEnabled && selectedFilePath"
+      nz-button
+      nzDanger
+      class="file-delete-button"
+      nzSize="small"
+      nz-tooltip="Clear selected file"
+      (click)="onClickDeleteSelectedFile()">
+      X
+    </button>
+  </ng-container>
 </div>
+<ng-template #connectedInputHint>
+  <span>Filename comes from the connected input port.</span>
+</ng-template>
 <div
   class="alert alert-danger"
   role="alert"

@@ -19,9 +19,9 @@
 
 package org.apache.texera.amber.operator.source.scan.arrow
 
-import org.apache.texera.amber.core.executor.SourceOperatorExecutor
 import org.apache.texera.amber.core.storage.DocumentFactory
 import org.apache.texera.amber.core.tuple.TupleLike
+import org.apache.texera.amber.operator.source.scan.InputFileSourceOpExec
 import org.apache.texera.amber.util.ArrowUtils
 import org.apache.texera.amber.util.JSONUtils.objectMapper
 import org.apache.arrow.memory.RootAllocator
@@ -33,16 +33,26 @@ import java.nio.file.{Files, StandardOpenOption}
 
 class ArrowSourceOpExec(
     descString: String
-) extends SourceOperatorExecutor {
-  private val desc: ArrowSourceOpDesc =
+) extends InputFileSourceOpExec {
+  override protected val desc: ArrowSourceOpDesc =
     objectMapper.readValue(descString, classOf[ArrowSourceOpDesc])
   private var reader: Option[ArrowFileReader] = None
   private var root: Option[VectorSchemaRoot] = None
   private var allocator: Option[RootAllocator] = None
 
   override def open(): Unit = {
+    if (desc.fileName.isDefined) {
+      initializeIfNeeded()
+    }
+  }
+
+  private def initializeIfNeeded(): Unit = {
+    if (reader.isDefined) {
+      return
+    }
     try {
-      val file = DocumentFactory.openReadonlyDocument(new URI(desc.fileName.get)).asFile()
+      desc.fileName = Some(resolvedInputFileName)
+      val file = DocumentFactory.openReadonlyDocument(new URI(resolvedInputFileName)).asFile()
       val alloc = new RootAllocator()
       allocator = Some(alloc)
       val channel = Files.newByteChannel(file.toPath, StandardOpenOption.READ)
@@ -58,6 +68,7 @@ class ArrowSourceOpExec(
   }
 
   override def produceTuple(): Iterator[TupleLike] = {
+    initializeIfNeeded()
     val rowIterator = new Iterator[TupleLike] {
       private var currentIndex = 0
       private var currentBatchIndex = 0

@@ -19,10 +19,10 @@
 
 package org.apache.texera.amber.operator.source.scan.csv
 
-import org.apache.texera.amber.core.executor.SourceOperatorExecutor
 import org.apache.texera.amber.core.storage.DocumentFactory
-import org.apache.texera.amber.core.tuple.{Attribute, AttributeTypeUtils, TupleLike}
+import org.apache.texera.amber.core.tuple.{Attribute, AttributeTypeUtils, Schema, TupleLike}
 import org.apache.texera.amber.operator.source.BufferedBlockReader
+import org.apache.texera.amber.operator.source.scan.InputFileSourceOpExec
 import org.apache.texera.amber.util.JSONUtils.objectMapper
 import org.tukaani.xz.SeekableFileInputStream
 
@@ -35,13 +35,14 @@ class ParallelCSVScanSourceOpExec private[csv] (
     descString: String,
     idx: Int = 0,
     workerCount: Int = 1
-) extends SourceOperatorExecutor {
-  val desc: ParallelCSVScanSourceOpDesc =
+) extends InputFileSourceOpExec {
+  override protected val desc: ParallelCSVScanSourceOpDesc =
     objectMapper.readValue(descString, classOf[ParallelCSVScanSourceOpDesc])
   private var reader: BufferedBlockReader = _
-  private val schema = desc.sourceSchema()
+  private var schema: Schema = desc.sourceSchema()
 
-  override def produceTuple(): Iterator[TupleLike] =
+  override def produceTuple(): Iterator[TupleLike] = {
+    initializeIfNeeded()
     new Iterator[TupleLike]() {
       override def hasNext: Boolean = reader.hasNext
 
@@ -86,11 +87,23 @@ class ParallelCSVScanSourceOpExec private[csv] (
       }
 
     }.filter(tuple => tuple != null)
+  }
 
   override def open(): Unit = {
+    if (desc.fileName.isDefined) {
+      initializeIfNeeded()
+    }
+  }
+
+  private def initializeIfNeeded(): Unit = {
+    if (reader != null) {
+      return
+    }
+    desc.fileName = Some(resolvedInputFileName)
+    schema = desc.sourceSchema()
     // here, the stream requires to be seekable, so datasetFileDesc creates a temp file here
     // TODO: consider a better way
-    val file = DocumentFactory.openReadonlyDocument(new URI(desc.fileName.get)).asFile()
+    val file = DocumentFactory.openReadonlyDocument(new URI(resolvedInputFileName)).asFile()
     val totalBytes: Long = file.length()
     // TODO: add support for limit
     // TODO: add support for offset
@@ -113,6 +126,6 @@ class ParallelCSVScanSourceOpExec private[csv] (
     if (startOffset == 0 && desc.hasHeader) reader.readLine
   }
 
-  override def close(): Unit = reader.close()
+  override def close(): Unit = if (reader != null) reader.close()
 
 }
