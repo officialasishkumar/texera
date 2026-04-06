@@ -27,9 +27,6 @@ import org.apache.texera.amber.core.workflow.PortIdentity
 import scala.collection.mutable.ArrayBuffer
 
 trait InputFileSourceOpExec extends SourceOperatorExecutor {
-
-  protected def desc: ScanSourceOpDesc
-
   private val inputFileNames = ArrayBuffer.empty[String]
 
   override def processTupleMultiPort(
@@ -45,18 +42,11 @@ trait InputFileSourceOpExec extends SourceOperatorExecutor {
   }
 
   protected def resolvedInputFileNames: Seq[String] = {
-    val fileNames =
-      if (inputFileNames.nonEmpty) {
-        inputFileNames.toSeq
-      } else {
-        desc.fileName.toSeq
-      }
-
-    if (fileNames.isEmpty) {
+    if (inputFileNames.isEmpty) {
       throw new IllegalStateException("No input file is available for this source operator.")
     }
 
-    fileNames.map(fileName =>
+    inputFileNames.toSeq.map(fileName =>
       if (FileResolver.isFileResolved(fileName)) {
         fileName
       } else {

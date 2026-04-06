@@ -17,26 +17,13 @@
  under the License.
 -->
 
-<div [ngClass]="{'input-autocomplete-container': isFileSelectionEnabled}">
-  <input
-    *ngIf="selectedFilePath || !isFileSelectionEnabled"
-    nz-input
-    [readOnly]="isFileSelectionEnabled"
-    required
-    [formControl]="formControl"
-    [formlyAttributes]="field" />
-  <button
-    *ngIf="isFileSelectionEnabled"
-    nz-button
-    class="file-select-button"
-    nzSize="small"
-    (click)="isFileSelectionEnabled && onClickOpenFileSelectionModal()">
-    {{ selectedFilePath ? 'Reselect File' : 'Select File' }}
-  </button>
-</div>
-<div
-  class="alert alert-danger"
-  role="alert"
-  *ngIf="props.showError && formControl.errors">
-  <formly-validation-message [field]="field"></formly-validation-message>
+<div class="section-container subsection-grid-container">
+  <nz-card class="section-title">
+    <h2 class="page-title">Computing Units</h2>
+  </nz-card>
+
+  <nz-card
+    class="section-list-container"
+    [nzBodyStyle]="{ height: '100%'}">
+  </nz-card>
 </div>

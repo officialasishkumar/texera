@@ -19,10 +19,10 @@
 
 package org.apache.texera.amber.operator.source.scan.json
 
+import org.apache.texera.amber.core.executor.SourceOperatorExecutor
 import org.apache.texera.amber.core.storage.DocumentFactory
 import org.apache.texera.amber.core.tuple.AttributeTypeUtils.parseField
 import org.apache.texera.amber.core.tuple.TupleLike
-import org.apache.texera.amber.operator.source.scan.InputFileSourceOpExec
 import org.apache.texera.amber.operator.source.scan.json.JSONUtil.JSONToMap
 import org.apache.texera.amber.util.JSONUtils.objectMapper
 
@@ -35,15 +35,14 @@ class JSONLScanSourceOpExec private[json] (
     descString: String,
     idx: Int = 0,
     workerCount: Int = 1
-) extends InputFileSourceOpExec {
-  override protected val desc: JSONLScanSourceOpDesc =
+) extends SourceOperatorExecutor {
+  private val desc: JSONLScanSourceOpDesc =
     objectMapper.readValue(descString, classOf[JSONLScanSourceOpDesc])
   private var rows: Iterator[String] = _
   private var reader: BufferedReader = _
-  private var schema = desc.sourceSchema()
+  private val schema = desc.sourceSchema()
 
   override def produceTuple(): Iterator[TupleLike] = {
-    initializeIfNeeded()
     rows.flatMap { line =>
       Try {
         val data = JSONToMap(objectMapper.readTree(line), desc.flatten).withDefaultValue(null)
@@ -59,18 +58,7 @@ class JSONLScanSourceOpExec private[json] (
   }
 
   override def open(): Unit = {
-    if (desc.fileName.isDefined) {
-      initializeIfNeeded()
-    }
-  }
-
-  private def initializeIfNeeded(): Unit = {
-    if (reader != null) {
-      return
-    }
-    desc.fileName = Some(resolvedInputFileName)
-    schema = desc.sourceSchema()
-    val stream = DocumentFactory.openReadonlyDocument(new URI(resolvedInputFileName)).asInputStream()
+    val stream = DocumentFactory.openReadonlyDocument(new URI(desc.fileName.get)).asInputStream()
     // count lines and partition the task to each worker
     reader = new BufferedReader(
       new InputStreamReader(stream, desc.fileEncoding.getCharset)
@@ -89,6 +77,6 @@ class JSONLScanSourceOpExec private[json] (
     rows = it2.iterator.slice(startOffset, endOffset)
   }
 
-  override def close(): Unit = if (reader != null) reader.close()
+  override def close(): Unit = reader.close()
 
 }

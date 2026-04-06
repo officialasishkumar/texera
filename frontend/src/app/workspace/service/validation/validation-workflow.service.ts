@@ -27,7 +27,6 @@ import { map } from "rxjs/operators";
 import { DynamicSchemaService } from "../dynamic-schema/dynamic-schema.service";
 import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
 import { WorkflowGraph, WorkflowGraphReadonly } from "../workflow-graph/model/workflow-graph";
-import { OperatorPredicate } from "../../types/workflow-common.interface";
 
 export type ValidationError = {
   isValid: false;
@@ -326,9 +325,6 @@ export class ValidationWorkflowService {
     for (let i = 0; i < operator.inputPorts.length; i++) {
       const port = operator.inputPorts[i];
       const portNumInputs = numInputLinksByPort.get(port.portID) ?? 0;
-      if (this.isOptionalFileInputPort(operator, port.portID, portNumInputs)) {
-        continue;
-      }
       if (port.allowMultiInputs) {
         if (portNumInputs < 1) {
           satisfyInput = false;
@@ -351,20 +347,6 @@ export class ValidationWorkflowService {
       }
       return { isValid: false, messages: messages };
     }
-  }
-
-  private isOptionalFileInputPort(
-    operator: OperatorPredicate,
-    portID: string,
-    portNumInputs: number
-  ): boolean {
-    if (portID !== "input-0" || portNumInputs > 0) {
-      return false;
-    }
-
-    const properties = operator.operatorProperties as Record<string, unknown>;
-    const selectedFileName = properties["fileName"];
-    return typeof selectedFileName === "string" && selectedFileName.trim().length > 0;
   }
 
   public static combineValidation(...validations: Validation[]): Validation {

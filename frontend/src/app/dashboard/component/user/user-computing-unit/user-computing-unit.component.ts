@@ -17,34 +17,11 @@
  * under the License.
  */
 
-mat-form-field {
-  width: 100%;
-}
-.input-autocomplete-container {
-  display: flex;
-  align-items: center;
-  width: 100%;
+import { Component } from "@angular/core";
 
-  input {
-    flex: 1;
-    margin-right: 10px;
-  }
-
-  button {
-    white-space: nowrap;
-  }
-
-  .file-select-button {
-    border: 2px solid #1890ff;
-    color: #1890ff;
-
-    &:hover {
-      background-color: #e6f7ff;
-      border-color: #1890ff;
-    }
-
-    &:focus {
-      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
-    }
-  }
-}
+@Component({
+  selector: "texera-computing-unit-section",
+  templateUrl: "user-computing-unit.component.html",
+  styleUrls: ["user-computing-unit.component.scss"],
+})
+export class UserComputingUnitComponent {}

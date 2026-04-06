@@ -17,34 +17,28 @@
  * under the License.
  */
 
-mat-form-field {
-  width: 100%;
-}
-.input-autocomplete-container {
-  display: flex;
-  align-items: center;
-  width: 100%;
+import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { UserComputingUnitComponent } from "./user-computing-unit.component";
+import { NzCardModule } from "ng-zorro-antd/card";
 
-  input {
-    flex: 1;
-    margin-right: 10px;
-  }
+describe("UserComputingUnitComponent", () => {
+  let component: UserComputingUnitComponent;
+  let fixture: ComponentFixture<UserComputingUnitComponent>;
 
-  button {
-    white-space: nowrap;
-  }
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [UserComputingUnitComponent],
+      imports: [NzCardModule],
+    }).compileComponents();
+  });
 
-  .file-select-button {
-    border: 2px solid #1890ff;
-    color: #1890ff;
+  beforeEach(() => {
+    fixture = TestBed.createComponent(UserComputingUnitComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-    &:hover {
-      background-color: #e6f7ff;
-      border-color: #1890ff;
-    }
-
-    &:focus {
-      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
-    }
-  }
-}
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
+});

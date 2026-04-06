@@ -43,7 +43,7 @@ class InputFileScanSourceOpDescSpec extends AnyFlatSpec {
     val desc = new InputFileScanSourceOpDesc()
     desc.attributeType = FileAttributeType.SINGLE_STRING
 
-    val executor = new FileScanSourceOpExec(objectMapper.writeValueAsString(desc))
+    val executor = new InputFileScanSourceOpExec(objectMapper.writeValueAsString(desc))
     val inputTuple = Tuple(
       Schema().add("filename", AttributeType.STRING),
       Array(FileResolver.resolve(TestOperators.TestTextFilePath).toASCIIString)
@@ -63,5 +63,15 @@ class InputFileScanSourceOpDescSpec extends AnyFlatSpec {
         .getField[String]("line")
         .equals("line1\nline2\nline3\nline4\nline5\nline6\nline7\nline8\nline9\nline10")
     )
+  }
+
+  it should "reject execution when no filename input tuple is provided" in {
+    val desc = new InputFileScanSourceOpDesc()
+    desc.attributeType = FileAttributeType.SINGLE_STRING
+
+    val executor = new InputFileScanSourceOpExec(objectMapper.writeValueAsString(desc))
+    executor.open()
+    assertThrows[IllegalStateException](executor.produceTuple().toList)
+    executor.close()
   }
 }

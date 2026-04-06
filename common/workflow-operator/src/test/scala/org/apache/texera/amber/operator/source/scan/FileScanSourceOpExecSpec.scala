@@ -19,7 +19,7 @@
 
 package org.apache.texera.amber.operator.source.scan
 
-import org.apache.texera.amber.core.tuple.{AttributeType, LargeBinary, Schema, SchemaEnforceable, Tuple}
+import org.apache.texera.amber.core.tuple.{AttributeType, LargeBinary, Schema, SchemaEnforceable}
 import org.apache.texera.amber.util.JSONUtils.objectMapper
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.flatspec.AnyFlatSpec
@@ -143,46 +143,6 @@ class FileScanSourceOpExecSpec extends AnyFlatSpec with BeforeAndAfterAll {
       case e: Exception =>
         info(s"S3 not configured: ${e.getMessage}")
     }
-  }
-
-  it should "read filename from connected input when provided" in {
-    val desc = createDescriptor()
-    desc.fileName = None
-    desc.attributeType = FileAttributeType.SINGLE_STRING
-
-    val executor = new FileScanSourceOpExec(objectMapper.writeValueAsString(desc))
-    val inputTuple = Tuple(Schema().add("filename", AttributeType.STRING), Array(testFile.toString))
-
-    executor.open()
-    executor.processTuple(inputTuple, 0)
-    val tuples = executor
-      .produceTuple()
-      .map(tupleLike => tupleLike.asInstanceOf[SchemaEnforceable].enforceSchema(desc.sourceSchema()))
-      .toSeq
-    executor.close()
-
-    assert(tuples.size == 1)
-    assert(tuples.head.getField[String]("line") == "Test content\nLine 2\nLine 3")
-  }
-
-  it should "read filename from connected input through processTupleMultiPort" in {
-    val desc = createDescriptor()
-    desc.fileName = None
-    desc.attributeType = FileAttributeType.SINGLE_STRING
-
-    val executor = new FileScanSourceOpExec(objectMapper.writeValueAsString(desc))
-    val inputTuple = Tuple(Schema().add("filename", AttributeType.STRING), Array(testFile.toString))
-
-    executor.open()
-    executor.processTupleMultiPort(inputTuple, 0)
-    val tuples = executor
-      .produceTuple()
-      .map(tupleLike => tupleLike.asInstanceOf[SchemaEnforceable].enforceSchema(desc.sourceSchema()))
-      .toSeq
-    executor.close()
-
-    assert(tuples.size == 1)
-    assert(tuples.head.getField[String]("line") == "Test content\nLine 2\nLine 3")
   }
 
   // LargeBinary Tests

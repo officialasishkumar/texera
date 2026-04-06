@@ -27,7 +27,6 @@ import {
   mockScanSentimentLink,
   mockSentimentPredicate,
 } from "../workflow-graph/model/mock-workflow-data";
-import { mockFileSourceSchema } from "../operator-metadata/mock-operator-metadata.data";
 import { WorkflowActionService } from "../workflow-graph/model/workflow-action.service";
 import { UndoRedoService } from "../undo-redo/undo-redo.service";
 import { OperatorMetadataService } from "../operator-metadata/operator-metadata.service";
@@ -37,7 +36,6 @@ import { marbles } from "rxjs-marbles";
 import { WorkflowUtilService } from "../workflow-graph/util/workflow-util.service";
 import { map } from "rxjs/operators";
 import { commonTestProviders } from "../../../common/testing/test-utils";
-import { OperatorPredicate } from "../../types/workflow-common.interface";
 
 describe("ValidationWorkflowService", () => {
   let validationWorkflowService: ValidationWorkflowService;
@@ -113,25 +111,6 @@ describe("ValidationWorkflowService", () => {
     workflowActionservice.addLink(mockScanResultLink);
     expect(validationWorkflowService.validateOperator(mockResultPredicate.operatorID).isValid).toBeTruthy();
     expect(validationWorkflowService.validateOperator(mockScanPredicate.operatorID).isValid).toBeFalsy();
-  });
-
-  it("should treat file source filename input as optional when a file is selected", () => {
-    const mockFileSourcePredicate: OperatorPredicate = {
-      operatorID: "file-source-1",
-      operatorType: mockFileSourceSchema.operatorType,
-      operatorVersion: mockFileSourceSchema.operatorVersion,
-      operatorProperties: {
-        fileName: "/owner@example.com/dataset/v1/file.csv",
-      },
-      inputPorts: [{ portID: "input-0" }],
-      outputPorts: [{ portID: "output-0" }],
-      showAdvanced: true,
-      isDisabled: false,
-    };
-
-    workflowActionservice.addOperator(mockFileSourcePredicate, mockPoint);
-
-    expect(validationWorkflowService.validateOperator(mockFileSourcePredicate.operatorID).isValid).toBeTruthy();
   });
 
   // TODO: this test is incompatible with shared editing.

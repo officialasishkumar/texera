@@ -19,7 +19,6 @@
 
 package org.apache.texera.amber.operator.source.scan
 
-import org.apache.texera.amber.core.executor.SourceOperatorExecutor
 import org.apache.texera.amber.core.storage.DocumentFactory
 import org.apache.texera.amber.core.tuple.AttributeTypeUtils.parseField
 import org.apache.texera.amber.core.tuple.{LargeBinary, TupleLike}
@@ -34,16 +33,20 @@ import java.net.URI
 import scala.collection.mutable
 import scala.jdk.CollectionConverters.IteratorHasAsScala
 
-class FileScanSourceOpExec private[scan] (
+class InputFileScanSourceOpExec private[scan] (
     descString: String
-) extends SourceOperatorExecutor {
-  private val desc: FileScanSourceOpDesc =
-    objectMapper.readValue(descString, classOf[FileScanSourceOpDesc])
+) extends InputFileSourceOpExec {
+  private val desc: InputFileScanSourceOpDesc =
+    objectMapper.readValue(descString, classOf[InputFileScanSourceOpDesc])
 
   @throws[IOException]
   override def produceTuple(): Iterator[TupleLike] = {
+    resolvedInputFileNames.iterator.flatMap(produceTuplesForFile)
+  }
+
+  private def produceTuplesForFile(resolvedFileName: String): Iterator[TupleLike] = {
     val is: InputStream =
-      DocumentFactory.openReadonlyDocument(new URI(desc.fileName.get)).asInputStream()
+      DocumentFactory.openReadonlyDocument(new URI(resolvedFileName)).asInputStream()
 
     val closeables = mutable.ArrayBuffer.empty[AutoCloseable]
     var zipIn: ZipArchiveInputStream = null
@@ -86,7 +89,6 @@ class FileScanSourceOpExec private[scan] (
               case FileAttributeType.SINGLE_STRING =>
                 new String(toByteArray(entry), desc.fileEncoding.getCharset)
               case FileAttributeType.LARGE_BINARY =>
-                // For large binaries, create reference and upload via streaming
                 val largeBinary = new LargeBinary()
                 val out = new LargeBinaryOutputStream(largeBinary)
                 try {
@@ -114,12 +116,12 @@ class FileScanSourceOpExec private[scan] (
               desc.fileScanOffset.getOrElse(0),
               desc.fileScanOffset.getOrElse(0) + desc.fileScanLimit.getOrElse(Int.MaxValue)
             )
-            .map(line => {
+            .map(line =>
               TupleLike(desc.attributeType match {
                 case FileAttributeType.SINGLE_STRING => line
                 case _                               => parseField(line, desc.attributeType.getType)
               })
-            })
+            )
         )
       }
 

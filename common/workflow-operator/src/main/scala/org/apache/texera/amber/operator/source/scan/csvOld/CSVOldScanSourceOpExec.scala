@@ -20,9 +20,9 @@
 package org.apache.texera.amber.operator.source.scan.csvOld
 
 import com.github.tototoshi.csv.{CSVReader, DefaultCSVFormat}
+import org.apache.texera.amber.core.executor.SourceOperatorExecutor
 import org.apache.texera.amber.core.storage.DocumentFactory
 import org.apache.texera.amber.core.tuple.{Attribute, AttributeTypeUtils, Schema, TupleLike}
-import org.apache.texera.amber.operator.source.scan.InputFileSourceOpExec
 import org.apache.texera.amber.util.JSONUtils.objectMapper
 
 import java.net.URI
@@ -30,14 +30,13 @@ import scala.collection.compat.immutable.ArraySeq
 
 class CSVOldScanSourceOpExec private[csvOld] (
     descString: String
-) extends InputFileSourceOpExec {
-  override protected val desc: CSVOldScanSourceOpDesc =
+) extends SourceOperatorExecutor {
+  val desc: CSVOldScanSourceOpDesc =
     objectMapper.readValue(descString, classOf[CSVOldScanSourceOpDesc])
   var reader: CSVReader = _
   var rows: Iterator[Seq[String]] = _
-  var schema: Schema = _
+  val schema: Schema = desc.sourceSchema()
   override def produceTuple(): Iterator[TupleLike] = {
-    initializeIfNeeded()
 
     val tuples = rows
       .map(fields =>
@@ -63,21 +62,10 @@ class CSVOldScanSourceOpExec private[csvOld] (
   }
 
   override def open(): Unit = {
-    if (desc.fileName.isDefined) {
-      initializeIfNeeded()
-    }
-  }
-
-  private def initializeIfNeeded(): Unit = {
-    if (reader != null) {
-      return
-    }
-    desc.fileName = Some(resolvedInputFileName)
-    schema = desc.sourceSchema()
     implicit object CustomFormat extends DefaultCSVFormat {
       override val delimiter: Char = desc.customDelimiter.get.charAt(0)
     }
-    val filePath = DocumentFactory.openReadonlyDocument(new URI(resolvedInputFileName)).asFile().toPath
+    val filePath = DocumentFactory.openReadonlyDocument(new URI(desc.fileName.get)).asFile().toPath
     reader = CSVReader.open(filePath.toString, desc.fileEncoding.getCharset.name())(CustomFormat)
     // skip line if this worker reads the start of a file, and the file has a header line
     val startOffset = desc.offset.getOrElse(0) + (if (desc.hasHeader) 1 else 0)

@@ -20,26 +20,24 @@
 package org.apache.texera.amber.operator.source.scan.csv
 
 import com.univocity.parsers.csv.{CsvFormat, CsvParser, CsvParserSettings}
+import org.apache.texera.amber.core.executor.SourceOperatorExecutor
 import org.apache.texera.amber.core.storage.DocumentFactory
 import org.apache.texera.amber.core.tuple.{AttributeTypeUtils, Schema, TupleLike}
-import org.apache.texera.amber.operator.source.scan.InputFileSourceOpExec
 import org.apache.texera.amber.util.JSONUtils.objectMapper
 
 import java.io.InputStreamReader
 import java.net.URI
 import scala.collection.immutable.ArraySeq
 
-class CSVScanSourceOpExec private[csv] (descString: String) extends InputFileSourceOpExec {
-  override protected val desc: CSVScanSourceOpDesc =
-    objectMapper.readValue(descString, classOf[CSVScanSourceOpDesc])
+class CSVScanSourceOpExec private[csv] (descString: String) extends SourceOperatorExecutor {
+  val desc: CSVScanSourceOpDesc = objectMapper.readValue(descString, classOf[CSVScanSourceOpDesc])
   var inputReader: InputStreamReader = _
   var parser: CsvParser = _
   var nextRow: Array[String] = _
   var numRowGenerated = 0
-  private var schema: Schema = _
+  private val schema: Schema = desc.sourceSchema()
 
   override def produceTuple(): Iterator[TupleLike] = {
-    initializeIfNeeded()
 
     val rowIterator = new Iterator[Array[String]] {
       override def hasNext: Boolean = {
@@ -79,19 +77,8 @@ class CSVScanSourceOpExec private[csv] (descString: String) extends InputFileSou
   }
 
   override def open(): Unit = {
-    if (desc.fileName.isDefined) {
-      initializeIfNeeded()
-    }
-  }
-
-  private def initializeIfNeeded(): Unit = {
-    if (parser != null) {
-      return
-    }
-    desc.fileName = Some(resolvedInputFileName)
-    schema = desc.sourceSchema()
     inputReader = new InputStreamReader(
-      DocumentFactory.openReadonlyDocument(new URI(resolvedInputFileName)).asInputStream(),
+      DocumentFactory.openReadonlyDocument(new URI(desc.fileName.get)).asInputStream(),
       desc.fileEncoding.getCharset
     )
 
