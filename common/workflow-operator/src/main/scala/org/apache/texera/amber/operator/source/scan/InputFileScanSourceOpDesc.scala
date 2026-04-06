@@ -22,7 +22,7 @@ package org.apache.texera.amber.operator.source.scan
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import org.apache.texera.amber.core.executor.OpExecWithClassName
 import org.apache.texera.amber.core.virtualidentity.{ExecutionIdentity, WorkflowIdentity}
-import org.apache.texera.amber.core.workflow.{InputPort, OutputPort}
+import org.apache.texera.amber.core.workflow.{InputPort, OutputPort, PhysicalOp}
 import org.apache.texera.amber.operator.metadata.{OperatorGroupConstants, OperatorInfo}
 import org.apache.texera.amber.util.JSONUtils.objectMapper
 
@@ -32,7 +32,7 @@ class InputFileScanSourceOpDesc extends FileScanSourceOpDesc {
   override def getPhysicalOp(
       workflowId: WorkflowIdentity,
       executionId: ExecutionIdentity
-  ) = {
+  ): PhysicalOp = {
     super
       .getPhysicalOp(workflowId, executionId)
       .copy(opExecInitInfo =
