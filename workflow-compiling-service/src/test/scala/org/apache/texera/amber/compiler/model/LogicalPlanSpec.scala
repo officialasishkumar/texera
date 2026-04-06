@@ -21,7 +21,7 @@ package org.apache.texera.amber.compiler.model
 
 import org.apache.texera.amber.core.virtualidentity.OperatorIdentity
 import org.apache.texera.amber.core.workflow.PortIdentity
-import org.apache.texera.amber.operator.source.scan.FileScanSourceOpDesc
+import org.apache.texera.amber.operator.source.scan.InputFileScanSourceOpDesc
 import org.apache.texera.amber.operator.source.scan.text.TextInputSourceOpDesc
 import org.scalatest.flatspec.AnyFlatSpec
 
@@ -30,7 +30,7 @@ import scala.collection.mutable.ArrayBuffer
 class LogicalPlanSpec extends AnyFlatSpec {
 
   it should "skip file resolution when a scan source receives filename from input" in {
-    val scanSource = new FileScanSourceOpDesc()
+    val scanSource = new InputFileScanSourceOpDesc()
     scanSource.setOperatorId("scan-source")
 
     val upstream = new TextInputSourceOpDesc()

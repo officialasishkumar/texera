@@ -49,9 +49,8 @@ class FileScanSourceOpDescSpec extends AnyFlatSpec with BeforeAndAfter {
     assert(inferredSchema.getAttribute("line").getType == AttributeType.STRING)
   }
 
-  it should "expose one filename input port" in {
-    assert(fileScanSourceOpDesc.operatorInfo.inputPorts.length == 1)
-    assert(fileScanSourceOpDesc.operatorInfo.inputPorts.head.displayName == "Filename")
+  it should "not expose filename input port on file scan source" in {
+    assert(fileScanSourceOpDesc.operatorInfo.inputPorts.isEmpty)
   }
 
   it should "infer schema with single column representing entire file in outputAsSingleTuple mode" in {
