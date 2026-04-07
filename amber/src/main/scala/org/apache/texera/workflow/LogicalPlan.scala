@@ -24,6 +24,8 @@ import org.apache.texera.amber.core.storage.FileResolver
 import org.apache.texera.amber.core.virtualidentity.OperatorIdentity
 import org.apache.texera.amber.operator.LogicalOp
 import org.apache.texera.amber.operator.source.scan.ScanSourceOpDesc
+import org.apache.texera.amber.operator.source.scan.csv.InputCSVScanSourceOpDesc
+import org.apache.texera.amber.operator.source.scan.text.TextInputSourceOpDesc
 import org.apache.texera.web.model.websocket.request.LogicalPlanPojo
 import org.jgrapht.graph.DirectedAcyclicGraph
 import org.jgrapht.util.SupplierUtil
@@ -119,6 +121,45 @@ case class LogicalPlan(
         }
 
       case _ => // Skip non-ScanSourceOpDesc operators
+    }
+  }
+
+  def inferInputCSVScanSourceColumns(
+      errorList: Option[ArrayBuffer[(OperatorIdentity, Throwable)]]
+  ): Unit = {
+    operators.foreach {
+      case operator @ (csvOp: InputCSVScanSourceOpDesc)
+          if csvOp.columns == null || csvOp.columns.isEmpty =>
+        Try {
+          val upstreamTextInput = getUpstreamLinks(operator.operatorIdentifier)
+            .flatMap(link => operators.find(_.operatorIdentifier == link.fromOpId))
+            .collectFirst { case textInput: TextInputSourceOpDesc => textInput }
+            .getOrElse(
+              throw new RuntimeException(
+                "CSV File Scan From Input requires a literal Text Input filename to infer columns."
+              )
+            )
+
+          val fileName = upstreamTextInput.textInput
+            .linesIterator
+            .find(_.trim.nonEmpty)
+            .map(_.trim)
+            .getOrElse(throw new RuntimeException("No input file name"))
+          csvOp.inferColumnsFromFileName(fileName)
+        } match {
+          case Success(_) =>
+
+          case Failure(err) =>
+            logger.error("Error inferring columns for InputCSVScanSourceOpDesc", err)
+            errorList match {
+              case Some(errList) =>
+                errList.append((operator.operatorIdentifier, err))
+              case None =>
+                throw err
+            }
+        }
+
+      case _ => // Skip operators that do not need CSV column inference
     }
   }
 }

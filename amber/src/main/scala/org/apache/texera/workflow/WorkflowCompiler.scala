@@ -146,6 +146,7 @@ class WorkflowCompiler(
 
     // 2. resolve the file name in each scan source operator
     logicalPlan.resolveScanSourceOpFileName(None)
+    logicalPlan.inferInputCSVScanSourceColumns(None)
 
     // 3. expand the logical plan to the physical plan, and get a set of output ports that need storage
     val (physicalPlan, outputPortsNeedingStorage) =

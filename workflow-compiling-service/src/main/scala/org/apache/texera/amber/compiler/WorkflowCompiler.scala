@@ -209,6 +209,7 @@ class WorkflowCompiler(
 
     // 2. resolve the file name in each scan source operator
     logicalPlan.resolveScanSourceOpFileName(Some(errorList))
+    logicalPlan.inferInputCSVScanSourceColumns(Some(errorList))
 
     // 3. expand the logical plan to the physical plan
     val physicalPlan = expandLogicalPlan(logicalPlan, Some(errorList))
