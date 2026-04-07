@@ -97,12 +97,6 @@ case class LogicalPlan(
   ): Unit = {
     operators.foreach {
       case operator @ (scanOp: ScanSourceOpDesc) =>
-        val hasFilenameInputLink = links.exists(link =>
-          link.toOpId == operator.operatorIdentifier && link.toPortId == scanOp.operatorInfo.inputPorts.headOption.map(_.id).getOrElse(null)
-        )
-        if (hasFilenameInputLink && scanOp.fileName.isEmpty) {
-          ()
-        } else
         Try {
           // Resolve file path for ScanSourceOpDesc
           val fileName = scanOp.fileName.getOrElse(throw new RuntimeException("no input file name"))
