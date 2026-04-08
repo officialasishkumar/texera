@@ -24,6 +24,10 @@ import org.apache.texera.amber.core.storage.FileResolver
 import org.apache.texera.amber.core.virtualidentity.OperatorIdentity
 import org.apache.texera.amber.core.workflow.PortIdentity
 import org.apache.texera.amber.operator.LogicalOp
+import org.apache.texera.amber.operator.source.dataset.{
+  DatasetSelectorSourceOpDesc,
+  DatasetSelectorSourceOpExec
+}
 import org.apache.texera.amber.operator.source.scan.ScanSourceOpDesc
 import org.apache.texera.amber.operator.source.scan.csv.InputCSVScanSourceOpDesc
 import org.apache.texera.amber.operator.source.scan.text.TextInputSourceOpDesc
@@ -141,20 +145,39 @@ case class LogicalPlan(
       case operator @ (csvOp: InputCSVScanSourceOpDesc)
           if csvOp.columns == null || csvOp.columns.isEmpty =>
         Try {
-          val upstreamTextInput = getUpstreamLinks(operator.operatorIdentifier)
+          val upstreamOperator = getUpstreamLinks(operator.operatorIdentifier)
             .flatMap(link => operators.find(_.operatorIdentifier == link.fromOpId))
-            .collectFirst { case textInput: TextInputSourceOpDesc => textInput }
+            .collectFirst {
+              case textInput: TextInputSourceOpDesc       => textInput
+              case datasetSelector: DatasetSelectorSourceOpDesc => datasetSelector
+            }
             .getOrElse(
               throw new RuntimeException(
-                "CSV File Scan From Input requires a literal Text Input filename to infer columns."
+                "CSV File Scan From Input requires either a literal Text Input filename or a Dataset Selector to infer columns."
               )
             )
 
-          val fileName = upstreamTextInput.textInput
-            .linesIterator
-            .find(_.trim.nonEmpty)
-            .map(_.trim)
-            .getOrElse(throw new RuntimeException("No input file name"))
+          val fileName = upstreamOperator match {
+            case textInput: TextInputSourceOpDesc =>
+              textInput.textInput
+                .linesIterator
+                .find(_.trim.nonEmpty)
+                .map(_.trim)
+                .getOrElse(throw new RuntimeException("No input file name"))
+            case datasetSelector: DatasetSelectorSourceOpDesc =>
+              DatasetSelectorSourceOpExec
+                .listFileNames(datasetSelector.datasetVersionPath)
+                .headOption
+                .getOrElse(
+                  throw new RuntimeException(
+                    "Selected dataset version does not contain any files."
+                  )
+                )
+            case _ =>
+              throw new RuntimeException(
+                "Unsupported upstream operator for CSV File Scan From Input column inference."
+              )
+          }
           csvOp.inferColumnsFromFileName(fileName)
         } match {
           case Success(_) =>
