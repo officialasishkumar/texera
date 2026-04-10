@@ -28,38 +28,30 @@ import { DatasetService } from "../../../dashboard/service/user/dataset/dataset.
 @Component({
   selector: "texera-dataset-version-selector-template",
   templateUrl: "./dataset-version-selector.component.html",
-  styleUrls: ["./dataset-version-selector.component.scss"],
 })
 export class DatasetVersionSelectorComponent extends FieldType<FieldTypeConfig> implements OnInit {
   datasets: ReadonlyArray<DashboardDataset> = [];
   datasetVersions: ReadonlyArray<DatasetVersion> = [];
   selectedDataset?: DashboardDataset;
   selectedVersion?: DatasetVersion;
-  isLoadingDatasets = false;
-  isLoadingVersions = false;
 
   constructor(private datasetService: DatasetService) {
     super();
   }
 
   ngOnInit(): void {
-    this.loadDatasets();
-  }
-
-  private loadDatasets(): void {
-    this.isLoadingDatasets = true;
     this.datasetService
       .retrieveAccessibleDatasets()
       .pipe(untilDestroyed(this))
       .subscribe(datasets => {
         this.datasets = datasets;
-        this.isLoadingDatasets = false;
         this.restoreSelectionFromValue();
       });
   }
 
   private restoreSelectionFromValue(): void {
     const parsed = this.parseDatasetVersionPath(this.formControl.value);
+
     if (!parsed) {
       return;
     }
@@ -68,7 +60,7 @@ export class DatasetVersionSelectorComponent extends FieldType<FieldTypeConfig> 
       dataset =>
         dataset.ownerEmail === parsed.ownerEmail && dataset.dataset.name === parsed.datasetName
     );
-
+    console.log("parsed", this.selectedDataset);
     if (this.selectedDataset?.dataset.did !== undefined) {
       this.loadVersions(this.selectedDataset.dataset.did, parsed.versionName);
     }
@@ -96,13 +88,11 @@ export class DatasetVersionSelectorComponent extends FieldType<FieldTypeConfig> 
   }
 
   private loadVersions(did: number, versionNameToSelect?: string): void {
-    this.isLoadingVersions = true;
     this.datasetService
       .retrieveDatasetVersionList(did)
       .pipe(untilDestroyed(this))
       .subscribe(versions => {
         this.datasetVersions = versions;
-        this.isLoadingVersions = false;
         if (versionNameToSelect) {
           this.selectedVersion = versions.find(version => version.name === versionNameToSelect);
         } else if (versions.length > 0) {

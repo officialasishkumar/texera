@@ -32,7 +32,7 @@ import org.apache.texera.amber.util.JSONUtils.objectMapper
 class DatasetSelectorSourceOpDesc extends LogicalOp {
 
   @JsonProperty(required = true)
-  @JsonSchemaTitle("Dataset Version")
+  @JsonSchemaTitle("Dataset")
   var datasetVersionPath: String = _
 
   override def getPhysicalOp(
