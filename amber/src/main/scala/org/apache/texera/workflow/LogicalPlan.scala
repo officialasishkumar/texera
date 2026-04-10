@@ -23,10 +23,7 @@ import com.typesafe.scalalogging.LazyLogging
 import org.apache.texera.amber.core.storage.FileResolver
 import org.apache.texera.amber.core.virtualidentity.OperatorIdentity
 import org.apache.texera.amber.operator.LogicalOp
-import org.apache.texera.amber.operator.source.dataset.{
-  DatasetSelectorSourceOpDesc,
-  DatasetSelectorSourceOpExec
-}
+import org.apache.texera.amber.operator.source.dataset.DatasetSelectorSourceOpDesc
 import org.apache.texera.amber.operator.source.scan.ScanSourceOpDesc
 import org.apache.texera.amber.operator.source.scan.csv.InputCSVScanSourceOpDesc
 import org.apache.texera.amber.operator.source.scan.text.TextInputSourceOpDesc
