@@ -57,37 +57,27 @@ export class DatasetVersionSelectorComponent extends FieldType<FieldTypeConfig> 
     }
 
   onDatasetChange(): void {
-    if (this.selectedDataset?.dataset.did !== undefined) {
-      this.loadVersions(this.selectedDataset.dataset.did);
+    if (this.selectedDataset) {
+      this.datasetService
+        .retrieveDatasetVersionList(this.selectedDataset.dataset.did!)
+        .pipe(untilDestroyed(this))
+        .subscribe(versions => {
+          this.datasetVersions = versions;
+          this.selectedVersion = versions[0];
+          this.onVersionChange();
+          this.changeDetectorRef.detectChanges();
+        });
+    } else {
+      this.selectedVersion = undefined;
+      this.onVersionChange();
     }
   }
 
   onVersionChange(): void {
-    if (!this.selectedDataset || !this.selectedVersion) {
-      this.formControl.setValue(null);
-      return;
-    }
-
     this.formControl.setValue(
-      `/${this.selectedDataset.ownerEmail}/${this.selectedDataset.dataset.name}/${this.selectedVersion.name}`
+      this.selectedDataset && this.selectedVersion
+        ? `/${this.selectedDataset?.ownerEmail}/${this.selectedDataset?.dataset?.name}/${this.selectedVersion?.name}`
+        : null
     );
-  }
-
-  private loadVersions(did: number, versionNameToSelect?: string): void {
-    this.datasetService
-      .retrieveDatasetVersionList(did)
-      .pipe(untilDestroyed(this))
-      .subscribe(versions => {
-        this.datasetVersions = versions;
-        if (versionNameToSelect) {
-          this.selectedVersion = versions.find(version => version.name === versionNameToSelect);
-        } else if (versions.length > 0) {
-          this.selectedVersion = versions[0];
-        }
-        if (this.selectedVersion) {
-          this.onVersionChange();
-        }
-        this.changeDetectorRef.detectChanges();
-      });
   }
 }
