@@ -25,11 +25,11 @@ import org.apache.texera.amber.core.executor.OpExecWithClassName
 import org.apache.texera.amber.core.tuple.{AttributeType, Schema}
 import org.apache.texera.amber.core.virtualidentity.{ExecutionIdentity, WorkflowIdentity}
 import org.apache.texera.amber.core.workflow.{OutputPort, PhysicalOp, SchemaPropagationFunc}
+import org.apache.texera.amber.operator.LogicalOp
 import org.apache.texera.amber.operator.metadata.{OperatorGroupConstants, OperatorInfo}
-import org.apache.texera.amber.operator.source.SourceOperatorDescriptor
 import org.apache.texera.amber.util.JSONUtils.objectMapper
 
-class DatasetSelectorSourceOpDesc extends SourceOperatorDescriptor {
+class DatasetSelectorSourceOpDesc extends LogicalOp {
 
   @JsonProperty(required = true)
   @JsonSchemaTitle("Dataset Version")
@@ -52,10 +52,8 @@ class DatasetSelectorSourceOpDesc extends SourceOperatorDescriptor {
       .withInputPorts(operatorInfo.inputPorts)
       .withOutputPorts(operatorInfo.outputPorts)
       .withPropagateSchema(
-        SchemaPropagationFunc(_ => Map(operatorInfo.outputPorts.head.id -> sourceSchema()))
+        SchemaPropagationFunc(_ => Map(operatorInfo.outputPorts.head.id -> Schema().add("filename", AttributeType.STRING)))
       )
-
-  override def sourceSchema(): Schema = Schema().add("filename", AttributeType.STRING)
 
   override def operatorInfo: OperatorInfo =
     OperatorInfo(

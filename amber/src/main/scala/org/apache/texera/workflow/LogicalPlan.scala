@@ -154,15 +154,6 @@ case class LogicalPlan(
                 .find(_.trim.nonEmpty)
                 .map(_.trim)
                 .getOrElse(throw new RuntimeException("No input file name"))
-            case datasetSelector: DatasetSelectorSourceOpDesc =>
-              DatasetSelectorSourceOpExec
-                .listFileNames(datasetSelector.datasetVersionPath)
-                .headOption
-                .getOrElse(
-                  throw new RuntimeException(
-                    "Selected dataset version does not contain any files."
-                  )
-                )
             case _ =>
               throw new RuntimeException(
                 "Unsupported upstream operator for CSV File Scan From Input column inference."

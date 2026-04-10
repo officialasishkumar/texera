@@ -19,73 +19,37 @@
 
 package org.apache.texera.amber.operator.source.dataset
 
-import io.lakefs.clients.sdk.model.ObjectStats
 import org.apache.texera.amber.core.executor.SourceOperatorExecutor
 import org.apache.texera.amber.core.storage.util.LakeFSStorageClient
 import org.apache.texera.amber.core.tuple.TupleLike
 import org.apache.texera.amber.util.JSONUtils.objectMapper
 import org.apache.texera.dao.SqlServer
-import org.apache.texera.dao.SqlServer.withTransaction
 import org.apache.texera.dao.jooq.generated.tables.Dataset.DATASET
 import org.apache.texera.dao.jooq.generated.tables.DatasetVersion.DATASET_VERSION
 import org.apache.texera.dao.jooq.generated.tables.User.USER
-import org.apache.texera.dao.jooq.generated.tables.pojos.{Dataset, DatasetVersion}
 
 class DatasetSelectorSourceOpExec private[dataset] (descString: String) extends SourceOperatorExecutor {
   private val desc: DatasetSelectorSourceOpDesc =
     objectMapper.readValue(descString, classOf[DatasetSelectorSourceOpDesc])
 
   override def produceTuple(): Iterator[TupleLike] = {
-    DatasetSelectorSourceOpExec
-      .listFileNames(desc.datasetVersionPath)
-      .iterator
-      .map(fileName => TupleLike("filename" -> fileName))
-  }
-}
+    val Seq(_, ownerEmail, datasetName, versionName) =
+      desc.datasetVersionPath.split("/").toSeq
 
-object DatasetSelectorSourceOpExec {
-
-
-  private def isRealFile(obj: ObjectStats): Boolean = {
-    val path = Option(obj.getPath).getOrElse("").trim
-    path.nonEmpty && !path.endsWith("/")
-  }
-
-  def listFileNames(datasetVersionPath: String): Seq[String] = {
-    val Array(ownerEmail, datasetName, versionName) = datasetVersionPath.trim.split("/")
-    val (dataset, datasetVersion) = resolveDatasetVersion(ownerEmail, datasetName, versionName)
-    val versionPrefix = s"/$ownerEmail/$datasetName/$versionName"
-    LakeFSStorageClient
-      .retrieveObjectsOfVersion(dataset.getRepositoryName, datasetVersion.getVersionHash)
-      .iterator
-      .filter(isRealFile)
-      .toSeq
-      .sortBy(_.getPath)
-      .map(obj => s"$versionPrefix/${obj.getPath}")
-  }
-
-  private def resolveDatasetVersion(
-      ownerEmail: String,
-      datasetName: String,
-      versionName: String
-  ): (Dataset, DatasetVersion) =
-    withTransaction(SqlServer.getInstance().createDSLContext()) { ctx =>
-      val dataset = ctx
-        .select(DATASET.fields: _*)
+    val (repositoryName, versionHash) =
+      SqlServer.getInstance().createDSLContext()
+        .select(DATASET.REPOSITORY_NAME, DATASET_VERSION.VERSION_HASH)
         .from(DATASET)
-        .leftJoin(USER)
-        .on(USER.UID.eq(DATASET.OWNER_UID))
+        .join(USER).on(USER.UID.eq(DATASET.OWNER_UID))
+        .join(DATASET_VERSION).on(DATASET_VERSION.DID.eq(DATASET.DID))
         .where(USER.EMAIL.eq(ownerEmail))
         .and(DATASET.NAME.eq(datasetName))
-        .fetchOneInto(classOf[Dataset])
-
-
-      val datasetVersion = ctx
-        .selectFrom(DATASET_VERSION)
-        .where(DATASET_VERSION.DID.eq(dataset.getDid))
         .and(DATASET_VERSION.NAME.eq(versionName))
-        .fetchOneInto(classOf[DatasetVersion])
+        .fetchOne(r => (r.value1(), r.value2()))
 
-      (dataset, datasetVersion)
-    }
+    LakeFSStorageClient
+      .retrieveObjectsOfVersion(repositoryName, versionHash)
+      .map(obj => TupleLike("filename" -> s"${desc.datasetVersionPath}/${obj.getPath}"))
+      .iterator
+  }
 }
