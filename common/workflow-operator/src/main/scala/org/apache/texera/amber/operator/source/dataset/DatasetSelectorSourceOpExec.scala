@@ -44,21 +44,7 @@ class DatasetSelectorSourceOpExec private[dataset] (descString: String) extends 
 }
 
 object DatasetSelectorSourceOpExec {
-  def parseDatasetVersionPath(path: String): (String, String, String) = {
-    val parts = Option(path)
-      .map(_.trim)
-      .getOrElse("")
-      .split("/")
-      .filter(_.nonEmpty)
 
-    if (parts.length != 3) {
-      throw new IllegalArgumentException(
-        "Dataset version path must be in the format /ownerEmail/datasetName/versionName."
-      )
-    }
-
-    (parts(0), parts(1), parts(2))
-  }
 
   private def isRealFile(obj: ObjectStats): Boolean = {
     val path = Option(obj.getPath).getOrElse("").trim
@@ -66,7 +52,7 @@ object DatasetSelectorSourceOpExec {
   }
 
   def listFileNames(datasetVersionPath: String): Seq[String] = {
-    val (ownerEmail, datasetName, versionName) = parseDatasetVersionPath(datasetVersionPath)
+    val Array(ownerEmail, datasetName, versionName) = datasetVersionPath.trim.split("/")
     val (dataset, datasetVersion) = resolveDatasetVersion(ownerEmail, datasetName, versionName)
     val versionPrefix = s"/$ownerEmail/$datasetName/$versionName"
     LakeFSStorageClient
@@ -93,23 +79,12 @@ object DatasetSelectorSourceOpExec {
         .and(DATASET.NAME.eq(datasetName))
         .fetchOneInto(classOf[Dataset])
 
-      if (dataset == null) {
-        throw new IllegalArgumentException(
-          s"Dataset '$datasetName' owned by '$ownerEmail' was not found."
-        )
-      }
 
       val datasetVersion = ctx
         .selectFrom(DATASET_VERSION)
         .where(DATASET_VERSION.DID.eq(dataset.getDid))
         .and(DATASET_VERSION.NAME.eq(versionName))
         .fetchOneInto(classOf[DatasetVersion])
-
-      if (datasetVersion == null) {
-        throw new IllegalArgumentException(
-          s"Dataset version '$versionName' for dataset '$datasetName' was not found."
-        )
-      }
 
       (dataset, datasetVersion)
     }
