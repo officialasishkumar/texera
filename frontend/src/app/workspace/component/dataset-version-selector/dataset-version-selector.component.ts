@@ -37,9 +37,6 @@ export class DatasetVersionSelectorComponent extends FieldType<FieldTypeConfig> 
 
   constructor(private datasetService: DatasetService) {
     super();
-  }
-
-  ngOnInit(): void {
     this.datasetService
       .retrieveAccessibleDatasets()
       .pipe(untilDestroyed(this))
@@ -47,6 +44,12 @@ export class DatasetVersionSelectorComponent extends FieldType<FieldTypeConfig> 
         this.datasets = datasets;
         this.restoreSelectionFromValue();
       });
+
+    console.log("datasets", this.datasets);
+  }
+
+  ngOnInit(): void {
+
   }
 
   private restoreSelectionFromValue(): void {
