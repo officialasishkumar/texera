@@ -29,8 +29,7 @@ import org.apache.texera.dao.jooq.generated.tables.DatasetVersion.DATASET_VERSIO
 import org.apache.texera.dao.jooq.generated.tables.User.USER
 
 class DatasetSelectorSourceOpExec private[dataset] (descString: String) extends SourceOperatorExecutor {
-  private val desc: DatasetSelectorSourceOpDesc =
-    objectMapper.readValue(descString, classOf[DatasetSelectorSourceOpDesc])
+  private val desc: DatasetSelectorSourceOpDesc = objectMapper.readValue(descString, classOf[DatasetSelectorSourceOpDesc])
 
   override def produceTuple(): Iterator[TupleLike] = {
     val Seq(_, ownerEmail, datasetName, versionName) =
