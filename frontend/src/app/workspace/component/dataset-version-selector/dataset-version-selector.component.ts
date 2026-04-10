@@ -17,7 +17,7 @@
  * under the License.
  */
 
-import { Component, OnInit } from "@angular/core";
+import {ChangeDetectorRef, Component, OnInit} from "@angular/core";
 import { FieldType, FieldTypeConfig } from "@ngx-formly/core";
 import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
 import { DashboardDataset } from "../../../dashboard/type/dashboard-dataset.interface";
@@ -35,45 +35,28 @@ export class DatasetVersionSelectorComponent extends FieldType<FieldTypeConfig> 
   selectedDataset?: DashboardDataset;
   selectedVersion?: DatasetVersion;
 
-  constructor(private datasetService: DatasetService) {
+  constructor(private datasetService: DatasetService, private changeDetectorRef: ChangeDetectorRef) {
     super();
+  }
+
+  ngOnInit(): void {
     this.datasetService
       .retrieveAccessibleDatasets()
       .pipe(untilDestroyed(this))
       .subscribe(datasets => {
         this.datasets = datasets;
-        this.restoreSelectionFromValue();
+        const [_, ownerEmail, datasetName, versionName] = this.formControl.value.split("/")
+        if (versionName) {
+          this.selectedDataset = this.datasets.find(
+            dataset =>
+              dataset.ownerEmail === ownerEmail && dataset.dataset.name === datasetName
+          );
+          this.onDatasetChange()
+        }
       });
-
-    console.log("datasets", this.datasets);
-  }
-
-  ngOnInit(): void {
-
-  }
-
-  private restoreSelectionFromValue(): void {
-    const parsed = this.parseDatasetVersionPath(this.formControl.value);
-
-    if (!parsed) {
-      return;
     }
-
-    this.selectedDataset = this.datasets.find(
-      dataset =>
-        dataset.ownerEmail === parsed.ownerEmail && dataset.dataset.name === parsed.datasetName
-    );
-    console.log("parsed", this.selectedDataset);
-    if (this.selectedDataset?.dataset.did !== undefined) {
-      this.loadVersions(this.selectedDataset.dataset.did, parsed.versionName);
-    }
-  }
 
   onDatasetChange(): void {
-    this.selectedVersion = undefined;
-    this.datasetVersions = [];
-    this.formControl.setValue(null);
-
     if (this.selectedDataset?.dataset.did !== undefined) {
       this.loadVersions(this.selectedDataset.dataset.did);
     }
@@ -104,19 +87,7 @@ export class DatasetVersionSelectorComponent extends FieldType<FieldTypeConfig> 
         if (this.selectedVersion) {
           this.onVersionChange();
         }
+        this.changeDetectorRef.detectChanges();
       });
-  }
-
-  private parseDatasetVersionPath(
-    path: string | null | undefined
-  ): { ownerEmail: string; datasetName: string; versionName: string } | undefined {
-    const parts = (path ?? "")
-      .split("/")
-      .filter(Boolean);
-    if (parts.length !== 3) {
-      return undefined;
-    }
-    const [ownerEmail, datasetName, versionName] = parts;
-    return { ownerEmail, datasetName, versionName };
   }
 }
